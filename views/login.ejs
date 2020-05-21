@@ -1,0 +1,54 @@
+<%- include('partials/header') %>
+    <div class="container-fluid page-body-wrapper full-page-wrapper">
+      <div class="content-wrapper d-flex align-items-center auth  theme-one">
+        <div class="row w-100">
+          <div class="col-lg-4 mx-auto">
+            <div class="wrapper">
+              <a class="navbar-brand brand-logo" href="index.html">
+                <img src="/images/nswlogo.png" alt="logo" /> </a>
+            </div>
+            <div class="auto-form-wrapper">
+              <form action="/login" method="POST">
+                <div class="form-group">
+                  <label class="label">Email</label>
+                  <div class="input-group">
+                    <input type="email" class="form-control" placeholder="email" id="email" name="email" autofocus>
+                    <div class="input-group-append">
+                      <span class="input-group-text">
+                        <i class="mdi mdi-check-circle-outline"></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="label">Password</label>
+                  <div class="input-group">
+                    <input type="password" class="form-control" placeholder="*********" id="password" name="password">
+                    <div class="input-group-append">
+                      <span class="input-group-text">
+                        <i class="mdi mdi-check-circle-outline"></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-grub">
+                  <% if(typeof error !== 'undefined' && error && error.length > 0) { %>
+                    <label class="text-small" style="color: red; text-align: center; font-weight: bold;">*<%= error %></label>
+                  <% } %>
+                </div>
+                <br>
+                <div class="form-group">
+                  <button class="btn btn-primary submit-btn btn-block">Login</button>
+                </div>
+              </form>
+            </div>
+            <footer class="footer">
+              <div class="container-fluid clearfix">
+                <span class="text-muted d-block text-center text-sm-left d-sm-inline-block">Copyright © LNSW 2020. All
+                  right reserved. <a href="#" target="_blank"></span>
+                </span>
+              </div>
+            </footer>
+          </div>
+        </div>
+      </div>
