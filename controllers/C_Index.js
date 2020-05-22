@@ -6,7 +6,7 @@ var userId = [];
 
 class C_Index {
    async index(req, res){
-        if(req.isAuthenticated()){
+        //if(req.isAuthenticated()){
             db.any('SELECT * FROM users')
             .then((result) => {
                 for(let i = 0; i < result.length; i++){
@@ -19,9 +19,9 @@ class C_Index {
             }).catch((err) => {
                 
             });
-        }else{
+        /* }else{
             res.redirect('/login')
-        }
+        } */
     }
 
     async chartApi(req, res){
