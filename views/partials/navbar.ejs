@@ -10,18 +10,18 @@
         </div>
             <li class="nav-item dropdown d-none d-xl-inline-block user-dropdown">
               <a class="nav-link dropdown-toggle" id="UserDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
-                <p class="mb-1 mt-3 font-weight-semibold">Selamat Datang : ADMIN </p>
+                <p class="mb-1 mt-3 font-weight-semibold">Selamat Datang :<%= user.name %> </p>
                 <img class="img-xs rounded-circle" src="/images/faces/face8.jpg" alt="Profile image">
               </a>
               <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
                 <div class="dropdown-header text-center">
                   <img class="img-md rounded-circle" src="/images/faces/face8.jpg" alt="Profile image">
-                  <p class="mb-1 mt-3 font-weight-semibold">ADMIN</p>
-                  <p class="font-weight-light text-muted mb-0">admin@gmail.com</p>
+                  <p class="mb-1 mt-3 font-weight-semibold"><%= user.role %></p>
+                  <p class="font-weight-light text-muted mb-0"><%= user.email %></p>
                 </div>
                 <a class="dropdown-item">Profile<i class="dropdown-item-icon ti-dashboard"></i></a>
                 <a class="dropdown-item">Pertanyaan<i class="dropdown-item-icon ti-help-alt"></i></a>
-                <a class="dropdown-item">Keluar<i class="dropdown-item-icon ti-power-off"></i></a>
+                <a class="dropdown-item" href="/logout" >Keluar<i class="dropdown-item-icon ti-power-off"></i></a>
               </div>
             </li>
           </ul>
