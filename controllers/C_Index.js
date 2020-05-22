@@ -14,8 +14,7 @@ class C_Index {
                     userId.push(result[i].id)
                 }
                 res.render('index', {
-                    user: userData,
-                    id: JSON.stringify(userId)
+                    user: req.user
                 })
             }).catch((err) => {
                 
