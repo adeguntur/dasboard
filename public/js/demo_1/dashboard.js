@@ -17,12 +17,12 @@
         var negaraExport = new Chart(negaraExportCanvas,{
           type: 'bar',
           data: {
-          labels: ["a", "b", "c", "d", "e"],
+          labels: data.kode_negara,
         datasets: [
           {
             label: "Thousands (RP)",
             backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
-            data: [200, 50, 30, 80, 70]
+            data: data.jml_importnegara,
           }
           ]
           },

@@ -2,6 +2,8 @@ const db        = require('../config/database')
 
 var pelabuhanKode = [];
 var pelabuhanJmlpib = [];
+var negaraImp = [];
+var negaraJimp = [];
 
 class C_Index {
    async index(req, res){
@@ -14,8 +16,19 @@ class C_Index {
                 }
                 
                 res.render('index', { })
-            }).catch((err) => {
-            });
+            })
+            .catch((err) => {});
+
+            db.any('SELECT penjualneg as kode_negara, COUNT(penjualneg) AS jml_imp FROM nswdb1.tblpibhdr GROUP BY kode_negara ORDER BY jml_imp DESC LIMIT 5 ')
+            .then((result) => {
+                for (let i = 0; i < result.length; i++) {
+                    negaraImp.push(result[i].kode_negara);
+                    negaraJimp.push(result[i].jml_imp)
+                }
+
+                res.render('index', {})
+            })
+            .catch((err) => {});
             
         /* }else{
             res.redirect('/login')
@@ -25,7 +38,9 @@ class C_Index {
     async chartApi(req, res){
        res.send({
            kode_pelabuhan: pelabuhanKode,
-           jml_pib: pelabuhanJmlpib
+           jml_pib: pelabuhanJmlpib,
+           kode_negara: negaraImp,
+           jml_importnegara: negaraJimp
        })
     }
     
