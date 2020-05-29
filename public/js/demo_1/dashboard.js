@@ -10,18 +10,19 @@
         }
         return res.json()
       })
-      .then(data => {
+      .then(
+        data => {
         //5 Negara import
         var negaraExportCanvas = document.getElementById("negara-export")
         var negaraExport = new Chart(negaraExportCanvas,{
           type: 'bar',
           data: {
-          labels: data.user,
+          labels: 'a',
         datasets: [
           {
             label: "Thousands (RP)",
             backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
-            data: data.id
+            data: '1'
           }
           ]
           },
@@ -39,12 +40,12 @@
         var pelabuhanExport = new Chart(pelabuhanExportCanvas,{
           type: 'bar',
           data: {
-          labels: ["TPK", "BLW", "MKS", "TES", "TLG"],
+          labels: data.kode_pelabuhan,
           datasets: [
           {
             label: "Thousands (RP)",
             backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
-            data: [200, 50, 30, 80, 70]
+            data: data.jml_pib
           }
         ]
           },
@@ -62,7 +63,7 @@
         var perkemRealisExport = new Chart(perkemRealisExportCanvas,{
           type: 'bar',
           data: {
-          labels: [idx],
+          labels: ["a","b","c","d","e"],
           datasets: [
           {
             label: "Thousands (RP)",

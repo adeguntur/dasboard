@@ -3,18 +3,19 @@ const db        = require('../config/database')
 
 var userData = [];
 var userId = [];
+var pelabuhanKode = [];
+var pelabuhanJmlpib = [];
 
 class C_Index {
    async index(req, res){
-        //if(req.isAuthenticated()){
-            db.any('SELECT * FROM users')
+  /*       if(req.isAuthenticated()){ */
+            db.any('SELECT pelbkr as kode_pelabuhan, COUNT(pelbkr) AS jml_pib FROM nswdb1.tblpibhdr ORDER BY jml_pib DESC LIMIT 5;')
             .then((result) => {
                 for(let i = 0; i < result.length; i++){
-                    userData.push(result[i].name);
-                    userId.push(result[i].id)
+                    pelabuhanKode.push(result[i].kode_pelabuhan);
+                    pelabuhanJmlpib.push(result[i].jml_pib)
                 }
                 res.render('index', {
-                    user: req.user
                 })
             }).catch((err) => {
                 
@@ -26,8 +27,8 @@ class C_Index {
 
     async chartApi(req, res){
        res.send({
-           user: userData,
-           id: userId
+           kode_pelabuhan: pelabuhanKode,
+           jml_pib: pelabuhanJmlpib
        })
     }
     
