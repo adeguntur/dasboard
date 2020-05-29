@@ -57,6 +57,29 @@
             }
           }
         })
+      
+         // 10 Importir terbesar
+         var importirExportCanvas = document.getElementById("importir-terbesar")
+         var importirExport = new Chart(importirExportCanvas, {
+           type: 'horizontalBar',
+           data: {
+             labels: data.nama_importir,
+             datasets: [{
+               label: "Thousands (RP)",
+               backgroundColor: ["#3e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9", "#c45850"],
+               data: data.total_importir
+             }]
+           },
+           options: {
+             legend: {
+               display: false
+             },
+             title: {
+               display: true,
+
+             }
+           }
+         })
 
         //Perkembangan realisasi import 
         var perkemRealisExportCanvas = document.getElementById("perkembangan-realisasi")

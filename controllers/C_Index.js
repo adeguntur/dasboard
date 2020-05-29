@@ -4,6 +4,8 @@ var pelabuhanKode = [];
 var pelabuhanJmlpib = [];
 var negaraImp = [];
 var negaraJimp = [];
+var importirNama = [];
+var importirTotal = [];
 
 class C_Index {
    async index(req, res){
@@ -29,6 +31,17 @@ class C_Index {
                 res.render('index', {})
             })
             .catch((err) => {});
+
+            db.any('SELECT impnama as nama_importir, COUNT(impnama) AS total_imp FROM nswdb1.tblpibhdr GROUP BY nama_importir ORDER BY total_imp DESC LIMIT 10 ')
+                .then((result) => {
+                    for (let i = 0; i < result.length; i++) {
+                        importirNama.push(result[i].nama_importir);
+                        importirTotal.push(result[i].total_imp)
+                    }
+
+                    res.render('index', {})
+                })
+                .catch((err) => {});
             
         /* }else{
             res.redirect('/login')
@@ -40,7 +53,9 @@ class C_Index {
            kode_pelabuhan: pelabuhanKode,
            jml_pib: pelabuhanJmlpib,
            kode_negara: negaraImp,
-           jml_importnegara: negaraJimp
+           jml_importnegara: negaraJimp,
+           nama_importir: importirNama,
+           total_importir: importirTotal
        })
     }
     
