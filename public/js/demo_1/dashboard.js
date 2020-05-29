@@ -2,7 +2,7 @@
   'use strict';
   $(function () {
     //API URL
-    const url = 'http://localhost:3000/api/test'
+    const url = 'http://localhost:3000/api/grafik'
     fetch(url)
       .then(res =>{
         if (!res.ok) {
@@ -17,12 +17,12 @@
         var negaraExport = new Chart(negaraExportCanvas,{
           type: 'bar',
           data: {
-          labels: 'a',
+          labels: ["a", "b", "c", "d", "e"],
         datasets: [
           {
             label: "Thousands (RP)",
             backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
-            data: '1'
+            data: [200, 50, 30, 80, 70]
           }
           ]
           },
