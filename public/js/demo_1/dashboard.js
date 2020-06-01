@@ -13,7 +13,9 @@
       .then(
         data => {
         //5 Negara import
+        var modal = document.getElementById("myModal");
         var negaraExportCanvas = document.getElementById("negara-export")
+        modal.style.display = "none"
         var negaraExport = new Chart(negaraExportCanvas,{
           type: 'bar',
           data: {
@@ -23,7 +25,7 @@
             label: "Thousands (RP)",
             borderWidth: 1,
             backgroundColor: ["#878787", "#ffa07a", "#ffda00", "#00ff5f", "#ff007f"],
-            data: data.jml_importnegara,
+            data: data.totalimport_negara,
           }
           ]
           },
@@ -54,14 +56,16 @@
              "animationDuration": 0
            },
            onClick: function (event, array) {
+             var span = document.getElementById("close");
              let element = this.getElementAtEvent(event);
              if (element.length > 0) {
                var series = element[0]._model.datasetLabel;
                var label = element[0]._model.label;
                var value = this.data.datasets[element[0]._datasetIndex].data[element[0]._index];
-               alert(label + " dengan nilai " + value);
-             }
-           },
+               //alert("Kode negara " + label + " dengan nilai import thousands (RP) " + value);
+               modal.style.display = "block";
+           }
+          },
            "animation": {
              "duration": 1,
              "onComplete": function () {
@@ -80,7 +84,6 @@
                    ctx.fillText(data, bar._model.x, bar._model.y + 20);
 
                  });
-
                });
 
              }
@@ -106,7 +109,10 @@
           },
           options: {
             responsive: true,
-            legend: { display: false },
+            legend: {
+              display: false,
+              text: ''
+            },
             title: {
               display: true,
             },
@@ -134,7 +140,7 @@
                  var series = element[0]._model.datasetLabel;
                  var label = element[0]._model.label;
                  var value = this.data.datasets[element[0]._datasetIndex].data[element[0]._index];
-                 alert(label + " dengan nilai " + value);
+                 alert("Kode pelabuhan " + label + " dengan nilai pemasukan thousands (RP) " + value);
                }
              },
              "animation": {
@@ -209,7 +215,7 @@
                   var series = element[0]._model.datasetLabel;
                   var label = element[0]._model.label;
                   var value = this.data.datasets[element[0]._datasetIndex].data[element[0]._index];
-                  alert(label + " dengan nilai " + value);
+                  alert("Nama importir " + label + " dengan nilai import thousands (RP)" + value);
                 }
               },
               "animation": {
@@ -247,19 +253,19 @@
           labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Des"],
           datasets: [
           {
-            label: "Thousands (RP)",
+            label: "Border",
             borderWidth: 1,
             backgroundColor: "#878787",
             data: [200, 50, 30, 80, 70]
           },
           {
-            label: "Thousands (RP)",
+            label: "Post Border",
             borderWidth: 1,
             backgroundColor: "#ff007f",
             data: [200, 50, 30, 80, 70]
           },
           {
-            label: "Thousands (RP)",
+            label: "Non Ijin",
             borderWidth: 1,
             backgroundColor: "#964b00",
             data: [200, 50, 30, 80, 70]
@@ -296,7 +302,7 @@
                  var series = element[0]._model.datasetLabel;
                  var label = element[0]._model.label;
                  var value = this.data.datasets[element[0]._datasetIndex].data[element[0]._index];
-                 alert(label + " dengan nilai " + value);
+                 alert(series + " Bulan " + label + " dengan nilai thousands (RP). " + value );
                }
              },
              "animation": {
