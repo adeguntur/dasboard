@@ -77,14 +77,14 @@ async function getPelabuhan(chart, kode, total) {
                 var awal = $('#awal').val();
                 var ahir = $('#ahir').val();
 
-                detailnegara(kdpel, tahun, awal, ahir);
+                detailpelabuhan(kdpel, tahun, awal, ahir);
                 //$('#Modaldetailpelabuhanpendapatan').modal('show')
             },
             "animation": {
                 "duration": 200,
-                "onProgress": function (animation) {
-                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
-                },
+                // "onProgress": function (animation) {
+                //     progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                // },
                 "onComplete": function () {
                     window.setTimeout(function () {
                         progress.value = 0;
@@ -173,14 +173,14 @@ async function getNegaraimport(chart, kode, total) {
                 var awal = $('#awal').val();
                 var ahir = $('#ahir').val();
 
-                detailpelabuhan (kdneg,tahun,awal,ahir);
+                detailnegara (kdneg,tahun,awal,ahir);
 
             },
             "animation": {
                 "duration": 1,
-                "onProgress": function (animation) {
-                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
-                },
+                // "onProgress": function (animation) {
+                //     progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                // },
                 "onComplete": function () {
                     window.setTimeout(function () {
                         progress.value = 0;
@@ -269,14 +269,14 @@ async function getImportir(chart, kode, total) {
                 var awal = $('#awal').val();
                 var ahir = $('#ahir').val();
 
-                detailpelabuhan(kdimportir, tahun, awal, ahir);
+                detailimportir(kdimportir, tahun, awal, ahir);
 
             },
             "animation": {
                 "duration": 1,
-                "onProgress": function (animation) {
-                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
-                },
+                // "onProgress": function (animation) {
+                //     progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                // },
                 "onComplete": function () {
                     window.setTimeout(function () {
                         progress.value = 0;
@@ -331,6 +331,27 @@ $.ajax({
 function detailpelabuhan(kode, tahun, awal, akhir) {
     $.ajax({
         url: 'http://localhost:3000/api/detpel',
+        method: 'POST',
+        data: {
+            kdpel: kode,
+            tahun: tahun,
+            awal: awal,
+            akhir: akhir
+
+        },
+        success: function (data) {
+            console.log(data);
+        },
+        error: function (data) {
+            console.log(data);
+        }
+    });
+
+}
+
+function detailimportir(kode, tahun, awal, akhir) {
+    $.ajax({
+        url: 'http://localhost:3000/api/detimportir',
         method: 'POST',
         data: {
             kdpel: kode,

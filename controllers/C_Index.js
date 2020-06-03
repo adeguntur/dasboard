@@ -129,17 +129,17 @@ class C_Index {
 
       await db.any(
           "select kdpel,kd_komoditi, SUM(cif_rp) as total from ( " +
-          "SELECT SUBSTRING(pelbkr, 3) AS kdpel, f.kd_komoditi, b.dcif * a.ndpbm AS cif_rp, a.pasokneg, a.pibtg AS tgl_pib FROM " +
+          "SELECT SUBSTRING(a.pelbkr, 3) AS kdpel, f.kd_komoditi, b.dcif * a.ndpbm AS cif_rp, a.pasokneg, a.pibtg AS tgl_pib FROM " +
           "nswdb1.tblpibhdr a JOIN nswdb1.tblpibdtl b ON a.cusdecid = b.cusdecid JOIN nswdb1.tbllartas_hdr e ON e.cusdecid = a.cusdecid " +
           "JOIN nswdb1.tbllartas_ok f ON e.seq = f.seq AND f.seri_brg = b.serial AND f.kdhs::text = b.nohs::text " +
-          "JOIN nswdb1.tblctl_postborder c ON c.cusdecid = a.cusdecid where(date_part('month', a.pibtg) >= $3 AND(date_part('month', a.pibtg) <= $4 and date_part('year', a.pibtg) = $2)) and a.pasokneg = $1) " +
-          "as foo group by negara, kd_komoditi order by total desc limit 10;", [kdpel, tahun, awal, ahir])
+          "JOIN nswdb1.tblctl_postborder c ON c.cusdecid = a.cusdecid where(date_part('month', a.pibtg) >= $3 AND(date_part('month', a.pibtg) <= $4 and date_part('year', a.pibtg) = $2)) and SUBSTRING(a.pelbkr, 3) = $1) " +
+          "as foo group by kdpel, kd_komoditi order by total desc limit 10;", [kdpel, tahun, awal, ahir])
         .then((result) => {
-
+          console.log(result)
           for (let i = 0; i < result.length; i++) {
 
             finalResult.push({
-              kode: result[i].kdpel,
+              kode: result[i].kd_komoditi,
               total: result[i].total
             })
           }
@@ -165,18 +165,21 @@ class C_Index {
       } = req.body;
 
       await db.any(
-          "select impnama as kdimportir,kd_komoditi, SUM(cif_rp) as total from ( " +
-          "SELECT impnama , f.kd_komoditi, b.dcif * a.ndpbm AS cif_rp, a.pasokneg, a.pibtg AS tgl_pib FROM " +
+          "SELECT a.pibno, a.pibtg  as tgl_pib, b.serial as seri_barang, b.jmlsat as jml_satuan, b.kdsat, a.impnpwp as npwp, a.impnama as importir FROM " +
           "nswdb1.tblpibhdr a JOIN nswdb1.tblpibdtl b ON a.cusdecid = b.cusdecid JOIN nswdb1.tbllartas_hdr e ON e.cusdecid = a.cusdecid " +
           "JOIN nswdb1.tbllartas_ok f ON e.seq = f.seq AND f.seri_brg = b.serial AND f.kdhs::text = b.nohs::text " +
-          "JOIN nswdb1.tblctl_postborder c ON c.cusdecid = a.cusdecid where(date_part('month', a.pibtg) >= $3 AND(date_part('month', a.pibtg) <= $4 and date_part('year', a.pibtg) = $2)) and a.pasokneg = $1) " +
-          "as foo group by negara, kd_komoditi order by total desc limit 10;", [kdimportir, tahun, awal, ahir])
+          "JOIN nswdb1.tblctl_postborder c ON c.cusdecid = a.cusdecid where(date_part('month', a.pibtg) >= $3 AND(date_part('month', a.pibtg) <= $4 and date_part('year', a.pibtg) = $2)) and a.impnama = $1 ;", [kdimportir, tahun, awal, ahir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
 
             finalResult.push({
-              kode: result[i].kdimportit,
-              total: result[i].total
+              nopib: result[i].pibno,
+              tglpib: result[i].tgl_pib,
+              seribarang: result[i].seri_barang,
+              jmlsatuan: result[i].jml_satuan,
+              kodesatuan: result[i].kdsat,
+              npwp: result[i].npwp,
+              importir: result[i].importir
             })
           }
         })
