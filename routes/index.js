@@ -8,6 +8,12 @@ router.get('/', index.index)
 router.get('/api/grafik', index.chartApi)
 
 //api detailnegara
-router.post('/users', index.detailnegaraApi)
+router.post('/api/detneg', index.detailnegaraApi)
+
+//api detailpelabuhan
+router.post('/api/detpel', index.detailpelpenApi)
+
+//api detailpelabuhan
+router.post('/api/detimportir', index.detailimportirApi)
 
 module.exports = router

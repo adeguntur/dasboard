@@ -69,11 +69,27 @@ async function getPelabuhan(chart, kode, total) {
                 "animationDuration": 0
             },
             onClick: function (event, array) {
-                $('#Modaldetailpelabuhanpendapatan').modal('show')
+                let element = this.getElementAtEvent(event);
+                if (element.length > 0) {
+                    var kdpel = element[0]._model.label;
+                }
+                var tahun = $('#tahun').val();
+                var awal = $('#awal').val();
+                var ahir = $('#ahir').val();
+
+                detailnegara(kdpel, tahun, awal, ahir);
+                //$('#Modaldetailpelabuhanpendapatan').modal('show')
             },
             "animation": {
-                "duration": 1,
+                "duration": 200,
+                "onProgress": function (animation) {
+                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                },
                 "onComplete": function () {
+                    window.setTimeout(function () {
+                        progress.value = 0;
+                    }, 2000);
+
                     var chartInstance = this.chart,
                         ctx = chartInstance.ctx;
 
@@ -149,11 +165,27 @@ async function getNegaraimport(chart, kode, total) {
                 "animationDuration": 0
             },
             onClick: function (event, array) {
-                $('#Modaldetailnegaraimpor').modal('show')
+                let element = this.getElementAtEvent(event);
+                if (element.length > 0) {
+                    var kdneg = element[0]._model.label;
+                }
+                var tahun = $('#tahun').val();
+                var awal = $('#awal').val();
+                var ahir = $('#ahir').val();
+
+                detailpelabuhan (kdneg,tahun,awal,ahir);
+
             },
             "animation": {
                 "duration": 1,
+                "onProgress": function (animation) {
+                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                },
                 "onComplete": function () {
+                    window.setTimeout(function () {
+                        progress.value = 0;
+                    }, 2000);
+
                     var chartInstance = this.chart,
                         ctx = chartInstance.ctx;
 
@@ -229,11 +261,27 @@ async function getImportir(chart, kode, total) {
                 "animationDuration": 0
             },
             onClick: function (event, array) {
-                $('#Modaldetailimportir').modal('show')
+                let element = this.getElementAtEvent(event);
+                if (element.length > 0) {
+                    var kdimportir = element[0]._model.label;
+                }
+                var tahun = $('#tahun').val();
+                var awal = $('#awal').val();
+                var ahir = $('#ahir').val();
+
+                detailpelabuhan(kdimportir, tahun, awal, ahir);
+
             },
             "animation": {
                 "duration": 1,
+                "onProgress": function (animation) {
+                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                },
                 "onComplete": function () {
+                    window.setTimeout(function () {
+                        progress.value = 0;
+                    }, 2000);
+
                     var chartInstance = this.chart,
                         ctx = chartInstance.ctx;
 
@@ -258,9 +306,47 @@ async function getImportir(chart, kode, total) {
     });
 }
 
-async function showmodalA(kode, tahun,awal , akhir){
-    // reuest ajax post, 
-    // onsucces: baru tampilin modal sekalian isinya
+
+function detailnegara(kode, tahun, awal, akhir) {
+$.ajax({
+    url: 'http://localhost:3000/api/detneg',
+    method: 'POST',
+    data : {
+        kdneg: kode,
+        tahun : tahun,
+        awal : awal,
+        akhir : akhir
+
+    },
+    success: function (data) {
+        console.log(data);
+    },
+    error: function (data) {
+        console.log(data);
+    }
+});
+
+}
+
+function detailpelabuhan(kode, tahun, awal, akhir) {
+    $.ajax({
+        url: 'http://localhost:3000/api/detpel',
+        method: 'POST',
+        data: {
+            kdpel: kode,
+            tahun: tahun,
+            awal: awal,
+            akhir: akhir
+
+        },
+        success: function (data) {
+            console.log(data);
+        },
+        error: function (data) {
+            console.log(data);
+        }
+    });
+
 }
 
 function getPriceNumber(value){

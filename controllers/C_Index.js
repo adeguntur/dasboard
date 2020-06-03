@@ -16,7 +16,10 @@ class C_Index {
       var realisasiBorder = [];
 
       //pelabuhan
-      await db.any("SELECT kode_pelabuhan AS kode_pelabuhan, SUM(cif_rp) as total from (SELECT SUBSTRING(pelbkr, 3) AS kode_pelabuhan, (cif * ndpbm) AS cif_rp, pibtg FROM nswdb1.tblpibhdr WHERE pibtg BETWEEN '2019-01-01' AND '2019-12-31' GROUP BY pelbkr, cif_rp, pibtg) as foo group by kode_pelabuhan order by total desc limit 5;")
+      await db.any("SELECT kode_pelabuhan AS kode_pelabuhan, SUM(cif_rp) as " +
+      "total from (SELECT SUBSTRING(pelbkr, 3) AS kode_pelabuhan, (cif * ndpbm) AS cif_rp, pibtg " +
+      "FROM nswdb1.tblpibhdr WHERE pibtg BETWEEN '2019-01-01' AND '2019-12-31' GROUP BY pelbkr, cif_rp, pibtg) as foo " +
+      "group by kode_pelabuhan order by total desc limit 5;")
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
             pelabuhanKode.push(result[i].kode_pelabuhan);
@@ -79,8 +82,7 @@ class C_Index {
     }
 
     async detailnegaraApi(req, res){
-      var komdetneg = [];
-      var nilaikomdetneg = [];
+      var finalResult = [];
 
       const {
         kdneg,
@@ -89,21 +91,104 @@ class C_Index {
         ahir
       } = req.body;
 
-      await db.any(" SELECT date_part('month', a.pibtg) as bulan_pib, b.dcif, a.ndpbm" +
-          "FROM tblpibhdr a JOIN tblpibdtl b ON a.cusdecid = b.cusdecid JOIN tblctl_postborder c ON c.cusdecid = a.cusdecid" +
-          "JOIN tblrealisasi_postborder d ON d.seq = c.seq AND d.seri_brg = b.serial AND b.nohs::text = d.hs_code::text" +
-          "WHERE a.pibtg >= '2019-01-01'::date AND a.pibtg <= '2019-12-31'::date ")
-        .then((result) => {
-              console.log(result)
+      await db.any(
+        "select negara,kd_komoditi, SUM(cif_rp) as total from ( "+
+        "SELECT a.pasokneg as negara, f.kd_komoditi, b.dcif * a.ndpbm AS cif_rp, a.pasokneg, a.pibtg AS tgl_pib FROM "+
+        "nswdb1.tblpibhdr a JOIN nswdb1.tblpibdtl b ON a.cusdecid = b.cusdecid JOIN nswdb1.tbllartas_hdr e ON e.cusdecid = a.cusdecid "+
+        "JOIN nswdb1.tbllartas_ok f ON e.seq = f.seq AND f.seri_brg = b.serial AND f.kdhs::text = b.nohs::text "+
+        "JOIN nswdb1.tblctl_postborder c ON c.cusdecid = a.cusdecid where(date_part('month', a.pibtg) >= $3 AND(date_part('month', a.pibtg) <= $4 and date_part('year', a.pibtg) = $2)) and a.pasokneg = $1) "+
+        "as foo group by negara, kd_komoditi order by total desc limit 10;",[kdneg, tahun, awal, ahir])
+         .then((result) => {
               for (let i = 0; i < result.length; i++) {
-                komdetneg.push(result[i].impnama);
-                nilaikomdetneg.push(result[i].total)
+
+                finalResult.push({
+                  kode: result[i].kd_komoditi,
+                  total: result[i].total
+                })
               }
         })
-        .catch((err) => {})
+        .catch((err) => {
+          console.log(err)
+        })
 
+        res.send({
+          finalResult: finalResult
+        })
 
     }   
+
+    async detailpelpenApi(req, res) {
+      var finalResult = [];
+
+      const {
+        kdpel,
+        tahun,
+        awal,
+        ahir
+      } = req.body;
+
+      await db.any(
+          "select kdpel,kd_komoditi, SUM(cif_rp) as total from ( " +
+          "SELECT SUBSTRING(pelbkr, 3) AS kdpel, f.kd_komoditi, b.dcif * a.ndpbm AS cif_rp, a.pasokneg, a.pibtg AS tgl_pib FROM " +
+          "nswdb1.tblpibhdr a JOIN nswdb1.tblpibdtl b ON a.cusdecid = b.cusdecid JOIN nswdb1.tbllartas_hdr e ON e.cusdecid = a.cusdecid " +
+          "JOIN nswdb1.tbllartas_ok f ON e.seq = f.seq AND f.seri_brg = b.serial AND f.kdhs::text = b.nohs::text " +
+          "JOIN nswdb1.tblctl_postborder c ON c.cusdecid = a.cusdecid where(date_part('month', a.pibtg) >= $3 AND(date_part('month', a.pibtg) <= $4 and date_part('year', a.pibtg) = $2)) and a.pasokneg = $1) " +
+          "as foo group by negara, kd_komoditi order by total desc limit 10;", [kdpel, tahun, awal, ahir])
+        .then((result) => {
+
+          for (let i = 0; i < result.length; i++) {
+
+            finalResult.push({
+              kode: result[i].kdpel,
+              total: result[i].total
+            })
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+
+      res.send({
+        finalResult: finalResult
+      })
+
+    }
+
+    async detailimportirApi(req, res) {
+      var finalResult = [];
+
+      const {
+        kdimportir,
+        tahun,
+        awal,
+        ahir
+      } = req.body;
+
+      await db.any(
+          "select impnama as kdimportir,kd_komoditi, SUM(cif_rp) as total from ( " +
+          "SELECT impnama , f.kd_komoditi, b.dcif * a.ndpbm AS cif_rp, a.pasokneg, a.pibtg AS tgl_pib FROM " +
+          "nswdb1.tblpibhdr a JOIN nswdb1.tblpibdtl b ON a.cusdecid = b.cusdecid JOIN nswdb1.tbllartas_hdr e ON e.cusdecid = a.cusdecid " +
+          "JOIN nswdb1.tbllartas_ok f ON e.seq = f.seq AND f.seri_brg = b.serial AND f.kdhs::text = b.nohs::text " +
+          "JOIN nswdb1.tblctl_postborder c ON c.cusdecid = a.cusdecid where(date_part('month', a.pibtg) >= $3 AND(date_part('month', a.pibtg) <= $4 and date_part('year', a.pibtg) = $2)) and a.pasokneg = $1) " +
+          "as foo group by negara, kd_komoditi order by total desc limit 10;", [kdimportir, tahun, awal, ahir])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+
+            finalResult.push({
+              kode: result[i].kdimportit,
+              total: result[i].total
+            })
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+
+      res.send({
+        finalResult: finalResult
+      })
+
+    }
 
 
 
