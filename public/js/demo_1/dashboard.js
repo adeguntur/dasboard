@@ -6,7 +6,9 @@ $(document).ready(function(){
             getPelabuhan('pelabuhan-pemasukan', data.kode_pelabuhan, data.jml_pemasukan);
             getNegaraimport('negara-import', data.kode_negara, data.totalimport_negara);
             getImportir('importir-terbesar', data.nama_importir, data.total_importir);
-            //getNegaraimport5('transactionsMonthly', data.data.transactions.transactionsMonthly);
+            getBorder('perkembangan-realisasi');
+            getPostborder('perkembangan-realisasi');
+            getNonijin('perkembangan-realisasi');
         },
         error: function(data) {
             console.log(data);
@@ -67,14 +69,7 @@ async function getPelabuhan(chart, kode, total) {
                 "animationDuration": 0
             },
             onClick: function (event, array) {
-                var span = document.getElementById("close");
-                let element = this.getElementAtEvent(event);
-                if (element.length > 0) {
-                    var series = element[0]._model.datasetLabel;
-                    var label = element[0]._model.label;
-                    var value = this.data.datasets[element[0]._datasetIndex].data[element[0]._index];
-                    alert("Kode negara " + label + " dengan nilai import thousands (RP) " + value);
-                }
+                $('#Modaldetailpelabuhanpendapatan').modal('show')
             },
             "animation": {
                 "duration": 1,
@@ -154,14 +149,7 @@ async function getNegaraimport(chart, kode, total) {
                 "animationDuration": 0
             },
             onClick: function (event, array) {
-                var span = document.getElementById("close");
-                let element = this.getElementAtEvent(event);
-                if (element.length > 0) {
-                    var series = element[0]._model.datasetLabel;
-                    var label = element[0]._model.label;
-                    var value = this.data.datasets[element[0]._datasetIndex].data[element[0]._index];
-                    alert("Kode negara " + label + " dengan nilai import thousands (RP) " + value);
-                }
+                $('#Modaldetailnegaraimpor').modal('show')
             },
             "animation": {
                 "duration": 1,
@@ -241,14 +229,7 @@ async function getImportir(chart, kode, total) {
                 "animationDuration": 0
             },
             onClick: function (event, array) {
-                var span = document.getElementById("close");
-                let element = this.getElementAtEvent(event);
-                if (element.length > 0) {
-                    var series = element[0]._model.datasetLabel;
-                    var label = element[0]._model.label;
-                    var value = this.data.datasets[element[0]._datasetIndex].data[element[0]._index];
-                    alert("Kode negara " + label + " dengan nilai import thousands (RP) " + value);
-                }
+                $('#Modaldetailimportir').modal('show')
             },
             "animation": {
                 "duration": 1,
@@ -275,6 +256,11 @@ async function getImportir(chart, kode, total) {
             }
         }
     });
+}
+
+async function showmodalA(kode, tahun,awal , akhir){
+    // reuest ajax post, 
+    // onsucces: baru tampilin modal sekalian isinya
 }
 
 function getPriceNumber(value){

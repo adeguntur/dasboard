@@ -7,4 +7,7 @@ router.get('/', index.index)
 //api chart
 router.get('/api/grafik', index.chartApi)
 
+//api detailnegara
+router.post('/users', index.detailnegaraApi)
+
 module.exports = router

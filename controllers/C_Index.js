@@ -77,6 +77,36 @@ class C_Index {
            total_importir: importirTotal
        })
     }
+
+    async detailnegaraApi(req, res){
+      var komdetneg = [];
+      var nilaikomdetneg = [];
+
+      const {
+        kdneg,
+        tahun,
+        awal,
+        ahir
+      } = req.body;
+
+      await db.any(" SELECT date_part('month', a.pibtg) as bulan_pib, b.dcif, a.ndpbm" +
+          "FROM tblpibhdr a JOIN tblpibdtl b ON a.cusdecid = b.cusdecid JOIN tblctl_postborder c ON c.cusdecid = a.cusdecid" +
+          "JOIN tblrealisasi_postborder d ON d.seq = c.seq AND d.seri_brg = b.serial AND b.nohs::text = d.hs_code::text" +
+          "WHERE a.pibtg >= '2019-01-01'::date AND a.pibtg <= '2019-12-31'::date ")
+        .then((result) => {
+              console.log(result)
+              for (let i = 0; i < result.length; i++) {
+                komdetneg.push(result[i].impnama);
+                nilaikomdetneg.push(result[i].total)
+              }
+        })
+        .catch((err) => {})
+
+
+    }   
+
+
+
     
 }
 module.exports = new C_Index();
