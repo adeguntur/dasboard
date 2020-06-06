@@ -81,27 +81,27 @@ class C_Index {
        })
     }
 
-    async detailnegaraApi(req, res){
+    async detailnegaraApi(req, res) {
       var finalResult = [];
 
       const {
         kdneg,
         tahun,
         awal,
-        ahir
+        akhir
       } = req.body;
-
+      
       await db.any(
         "select negara,kd_komoditi, SUM(cif_rp) as total from ( "+
         "SELECT a.pasokneg as negara, f.kd_komoditi, b.dcif * a.ndpbm AS cif_rp, a.pasokneg, a.pibtg AS tgl_pib FROM "+
         "nswdb1.tblpibhdr a JOIN nswdb1.tblpibdtl b ON a.cusdecid = b.cusdecid JOIN nswdb1.tbllartas_hdr e ON e.cusdecid = a.cusdecid "+
         "JOIN nswdb1.tbllartas_ok f ON e.seq = f.seq AND f.seri_brg = b.serial AND f.kdhs::text = b.nohs::text "+
         "JOIN nswdb1.tblctl_postborder c ON c.cusdecid = a.cusdecid where(date_part('month', a.pibtg) >= $3 AND(date_part('month', a.pibtg) <= $4 and date_part('year', a.pibtg) = $2)) and a.pasokneg = $1) "+
-        "as foo group by negara, kd_komoditi order by total desc limit 10;",[kdneg, tahun, awal, ahir])
+        "as foo group by negara, kd_komoditi order by total desc limit 10;",[kdneg, tahun, awal, akhir])
          .then((result) => {
               for (let i = 0; i < result.length; i++) {
-
                 finalResult.push({
+                  negara: result[i].negara,
                   kode: result[i].kd_komoditi,
                   total: result[i].total
                 })
@@ -110,7 +110,7 @@ class C_Index {
         .catch((err) => {
           console.log(err)
         })
-
+ 
         res.send({
           finalResult: finalResult
         })

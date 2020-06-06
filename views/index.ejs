@@ -140,7 +140,7 @@
     </div>
   </div>
 <!-- Modal -->
-<div class="modal fade bd-example-modal-lg" id="Modaldetailnegaraimpor" tabindex="-1" role="dialog">
+<div class="modal modal-lg" id="Modaldetailnegaraimpor" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -151,11 +151,10 @@
       </div>
       <div class="modal-body">
         <div class="container">
-          <h2>Detail Data Negara : </h2>
-          <p>Detail data 10 Komoditas dengan nilai import terbanyak pada negara  </p>
-          <table class="table table-bordered">
+          <table class="table table-bordered" id="detnegara">
             <thead>
               <tr>
+                <th>Negara</th>
                 <th>Komoditas</th>
                 <th>Nilai Impor</th>
               </tr>
@@ -245,6 +244,6 @@
   <%- include('partials/footer') %>
   <script>
   function hide() {
-  document.getElementById('myModal').style.display = 'none';
+  $('#Modaldetailnegaraimpor').modal('close');
   }
   </script>

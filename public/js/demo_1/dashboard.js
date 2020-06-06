@@ -87,7 +87,7 @@ async function getPelabuhan(chart, kode, total) {
                 // },
                 "onComplete": function () {
                     window.setTimeout(function () {
-                        progress.value = 0;
+                        // progress.value = 0;
                     }, 2000);
 
                     var chartInstance = this.chart,
@@ -183,7 +183,7 @@ async function getNegaraimport(chart, kode, total) {
                 // },
                 "onComplete": function () {
                     window.setTimeout(function () {
-                        progress.value = 0;
+                        // progress.value = 0;
                     }, 2000);
 
                     var chartInstance = this.chart,
@@ -279,7 +279,7 @@ async function getImportir(chart, kode, total) {
                 // },
                 "onComplete": function () {
                     window.setTimeout(function () {
-                        progress.value = 0;
+                        // progress.value = 0;
                     }, 2000);
 
                     var chartInstance = this.chart,
@@ -307,19 +307,30 @@ async function getImportir(chart, kode, total) {
 }
 
 
-function detailnegara(kode, tahun, awal, akhir) {
+function detailnegara(kdneg, tahun, awal, akhir) {
 $.ajax({
     url: 'http://localhost:3000/api/detneg',
     method: 'POST',
     data : {
-        kdneg: kode,
+        kdneg: kdneg,
         tahun : tahun,
         awal : awal,
         akhir : akhir
-
     },
-    success: function (data) {
-        console.log(data);
+    daataType: 'json',
+    success: function (response) {
+        let dataResult = response.finalResult;
+        var html = '';
+        var table = $('#detnegara tbody');
+
+        dataResult.forEach(data => {
+            html += "<tr><td>" + data.negara + "</td><td>" + data.kode + "</td><td>" + data.total + "</td></tr>";
+        })
+
+        table.empty();
+        table.append(html);
+        $('#Modaldetailnegaraimpor').modal('show');
+        
     },
     error: function (data) {
         console.log(data);
@@ -328,12 +339,12 @@ $.ajax({
 
 }
 
-function detailpelabuhan(kode, tahun, awal, akhir) {
+function detailpelabuhan(kdpel, tahun, awal, akhir) {
     $.ajax({
         url: 'http://localhost:3000/api/detpel',
         method: 'POST',
         data: {
-            kdpel: kode,
+            kdpel: kdpel,
             tahun: tahun,
             awal: awal,
             akhir: akhir
@@ -354,7 +365,7 @@ function detailimportir(kode, tahun, awal, akhir) {
         url: 'http://localhost:3000/api/detimportir',
         method: 'POST',
         data: {
-            kdpel: kode,
+            kdimportir: kode,
             tahun: tahun,
             awal: awal,
             akhir: akhir
