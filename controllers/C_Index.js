@@ -103,7 +103,6 @@ class C_Index {
           "group by kode_pelabuhan order by total desc limit 5;", [tahun, awal, ahir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
-            console.log(result)
             pelabuhanKode.push(result[i].kode_pelabuhan);
             pelabuhanJmlpemasukan.push(result[i].total)
           }
@@ -141,7 +140,6 @@ class C_Index {
           "JOIN tblrealisasi_postborder d ON d.seq = c.seq AND d.seri_brg = b.serial AND b.nohs::text = d.hs_code::text" +
           "WHERE (date_part('month', a.pibtg) >= $2 AND(date_part('month', a.pibtg) <= $3 and date_part('year', a.pibtg) = $1)) ", [tahun, awal, ahir])
         .then((result) => {
-          console.log(result)
           for (let i = 0; i < result.length; i++) {
             bulan_pib_B.push(result[i].bulan_pib);
             dcif_B.push(result[i].dcif);

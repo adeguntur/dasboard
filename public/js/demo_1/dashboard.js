@@ -76,6 +76,7 @@ $(document).ready(function(tahun,awal,ahir){
 async function getPelabuhan(chart, kode, total) {
     var labels = [];
     var jml_pemasukan = [];
+    var progress = document.getElementById('animationProgresspel');
 
     for (var i in kode) {
         labels.push(kode[i]);
@@ -132,8 +133,16 @@ async function getPelabuhan(chart, kode, total) {
                 var akhir = $('#ahir').val();
 
                 detailpelabuhan(kdpel, tahun, awal, akhir);
-                //$('#Modaldetailpelabuhanpendapatan').modal('show')
             },
+            animation: {
+                onProgress: function (animation) {
+                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                },
+                onAnimationComplete: function (animation) {
+                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                }
+            }
+            
         }
     });
 }
@@ -141,6 +150,7 @@ async function getPelabuhan(chart, kode, total) {
 async function getNegaraimport(chart, kode, total) {
     var labels = [];
     var totalimportNegara = [];
+    var progress = document.getElementById('animationProgressneg');
 
     for(var i in kode) {
         labels.push(kode[i]);
@@ -198,9 +208,13 @@ async function getNegaraimport(chart, kode, total) {
 
                 detailnegara (kdneg,tahun,awal,ahir);
 
-            },
-            "animation": {
-                "duration": 1
+            }, animation: {
+                onProgress: function (animation) {
+                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                },
+                onAnimationComplete: function (animation) {
+                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                }
             }
         }
     });
@@ -209,6 +223,7 @@ async function getNegaraimport(chart, kode, total) {
 async function getImportir(chart, kode, total) {
     var labels = [];
     var total_importir = [];
+    var progress = document.getElementById('animationProgressimportir');
 
     for (var i in kode) {
         labels.push(kode[i]);
@@ -266,9 +281,13 @@ async function getImportir(chart, kode, total) {
 
                 detailimportir(kdimportir, tahun, awal, akhir);
 
-            },
-            "animation": {
-                "duration": 1
+            }, animation: {
+                onProgress: function (animation) {
+                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                },
+                onAnimationComplete: function (animation) {
+                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                }
             }
         }
     });
@@ -324,6 +343,17 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
         var table = $('#detpelabuhantbl tbody');
 
         dataResult.forEach(data => {
+            var bilangan = data.total/1000;
+            var number_string = bilangan.toString(),
+                sisa = number_string.length % 3,
+                rupiah = number_string.substr(0, sisa),
+                ribuan = number_string.substr(sisa).match(/\d{3}/g);
+
+            if (ribuan) {
+                separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+
             html += "<tr><td>" + data.pel + "</td><td>" + data.kode + "</td><td>" + data.total + "</td></tr>";
         })
 
