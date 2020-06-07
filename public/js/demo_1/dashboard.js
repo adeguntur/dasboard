@@ -1,19 +1,74 @@
-$(document).ready(function(){
-    $.ajax({
-        url: 'http://localhost:3000/api/grafik',
-        method: 'GET',
-        success: function(data) {
-            getPelabuhan('pelabuhan-pemasukan', data.kode_pelabuhan, data.jml_pemasukan);
-            getNegaraimport('negara-import', data.kode_negara, data.totalimport_negara);
-            getImportir('importir-terbesar', data.nama_importir, data.total_importir);
-            getBorder('perkembangan-realisasi');
-            getPostborder('perkembangan-realisasi');
-            getNonijin('perkembangan-realisasi');
-        },
-        error: function(data) {
-            console.log(data);
-        }
+$(document).ready(function(tahun,awal,ahir){
+    var today = new Date();
+    var awal = 1;
+    var ahir = today.getMonth() + 1; //January is 0!
+    var tahun = today.getFullYear();
+
+    $('#tahun').val(tahun);
+    $('#awal').val(awal);
+    $('#ahir').val(ahir);
+    short(tahun, awal, ahir); //pencarian data awal
+    
+    $('#tahun').change(function () {
+        var tahun = $('#tahun').val();
+        var awal = $('#awal').val();
+        var ahir = $('#ahir').val();
+       short(tahun,awal,ahir);
     });
+    $('#awal').change(function () {
+       var tahun = $('#tahun').val();
+       var awal = $('#awal').val();
+       var ahir = $('#ahir').val();
+       short(tahun, awal, ahir);
+    });
+    $('#ahir').change(function () {
+        var tahun = $('#tahun').val();
+        var awal = $('#awal').val();
+        var ahir = $('#ahir').val();
+        short(tahun, awal, ahir);
+    });
+
+    function short(tahun,awal,ahir) {
+
+            $.ajax({
+                url: 'http://localhost:3000/api/grafik',
+                method: 'POST',
+                data: {
+                    tahun: tahun,
+                    awal: awal,
+                    ahir: ahir
+                },
+                dataType:'json',
+                success: function (data) {
+                    getPelabuhan('pelabuhan-pemasukan', data.kode_pelabuhan, data.jml_pemasukan);
+                    getNegaraimport('negara-import', data.kode_negara, data.totalimport_negara);
+                    getImportir('importir-terbesar', data.nama_importir, data.total_importir);
+                    //getBorder('perkembangan-realisasi');
+                    //getPostborder('perkembangan-realisasi');
+                    //getNonijin('perkembangan-realisasi');
+                },
+                error: function (data) {
+                    console.log(data);
+                }
+            })
+    }
+
+
+    // $.ajax({
+    //     url: 'http://localhost:3000/api/grafik',
+    //     method: 'GET',
+    //     success: function(data) {
+    //         getPelabuhan('pelabuhan-pemasukan', data.kode_pelabuhan, data.jml_pemasukan);
+    //         getNegaraimport('negara-import', data.kode_negara, data.totalimport_negara);
+    //         getImportir('importir-terbesar', data.nama_importir, data.total_importir);
+    //         //getBorder('perkembangan-realisasi');
+    //         //getPostborder('perkembangan-realisasi');
+    //         //getNonijin('perkembangan-realisasi');
+    //     },
+    //     error: function(data) {
+    //         console.log(data);
+    //     }
+    // });
     
 });
 
@@ -31,7 +86,6 @@ async function getPelabuhan(chart, kode, total) {
         labels: labels,
         datasets: [{
             label: "Thousands (RP)",
-            borderWidth: 1,
             backgroundColor: ["#878787", "#ffa07a", "#ffda00", "#00ff5f", "#ff007f"],
             fill: false,
             data: jml_pemasukan
@@ -75,41 +129,11 @@ async function getPelabuhan(chart, kode, total) {
                 }
                 var tahun = $('#tahun').val();
                 var awal = $('#awal').val();
-                var ahir = $('#ahir').val();
+                var akhir = $('#ahir').val();
 
-                detailpelabuhan(kdpel, tahun, awal, ahir);
+                detailpelabuhan(kdpel, tahun, awal, akhir);
                 //$('#Modaldetailpelabuhanpendapatan').modal('show')
             },
-            "animation": {
-                "duration": 200,
-                // "onProgress": function (animation) {
-                //     progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
-                // },
-                "onComplete": function () {
-                    window.setTimeout(function () {
-                        // progress.value = 0;
-                    }, 2000);
-
-                    var chartInstance = this.chart,
-                        ctx = chartInstance.ctx;
-
-                    ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'bottom';
-
-                    this.data.datasets.forEach(function (dataset, i) {
-                        var meta = chartInstance.controller.getDatasetMeta(i);
-
-                        meta.data.forEach(function (bar, index) {
-                            var data = dataset.data[index];
-                            ctx.fillText(data, bar._model.x, bar._model.y + 20);
-
-                        });
-                    });
-
-                }
-
-            }
         }
     });
 }
@@ -127,7 +151,6 @@ async function getNegaraimport(chart, kode, total) {
         labels: labels,
         datasets: [{
             label: "Thousands (RP)",
-            borderWidth: 1,
             backgroundColor: ["#878787", "#ffa07a", "#ffda00", "#00ff5f", "#ff007f"],
             fill: false,
             data: totalimportNegara
@@ -177,34 +200,7 @@ async function getNegaraimport(chart, kode, total) {
 
             },
             "animation": {
-                "duration": 1,
-                // "onProgress": function (animation) {
-                //     progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
-                // },
-                "onComplete": function () {
-                    window.setTimeout(function () {
-                        // progress.value = 0;
-                    }, 2000);
-
-                    var chartInstance = this.chart,
-                        ctx = chartInstance.ctx;
-
-                    ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'bottom';
-
-                    this.data.datasets.forEach(function (dataset, i) {
-                        var meta = chartInstance.controller.getDatasetMeta(i);
-
-                        meta.data.forEach(function (bar, index) {
-                            var data = dataset.data[index];
-                            ctx.fillText(data, bar._model.x, bar._model.y + 20);
-
-                        });
-                    });
-
-                }
-
+                "duration": 1
             }
         }
     });
@@ -223,8 +219,7 @@ async function getImportir(chart, kode, total) {
         labels: labels,
         datasets: [{
             label: "Thousands (RP)",
-            borderWidth: 1,
-            backgroundColor: ["#878787", "#ffa07a", "#ffda00", "#00ff5f", "#ff007f"],
+            backgroundColor: "#808080",
             fill: false,
             data: total
         }]
@@ -267,40 +262,13 @@ async function getImportir(chart, kode, total) {
                 }
                 var tahun = $('#tahun').val();
                 var awal = $('#awal').val();
-                var ahir = $('#ahir').val();
+                var akhir = $('#ahir').val();
 
-                detailimportir(kdimportir, tahun, awal, ahir);
+                detailimportir(kdimportir, tahun, awal, akhir);
 
             },
             "animation": {
-                "duration": 1,
-                // "onProgress": function (animation) {
-                //     progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
-                // },
-                "onComplete": function () {
-                    window.setTimeout(function () {
-                        // progress.value = 0;
-                    }, 2000);
-
-                    var chartInstance = this.chart,
-                        ctx = chartInstance.ctx;
-
-                    ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'bottom';
-
-                    this.data.datasets.forEach(function (dataset, i) {
-                        var meta = chartInstance.controller.getDatasetMeta(i);
-
-                        meta.data.forEach(function (bar, index) {
-                            var data = dataset.data[index];
-                            ctx.fillText(data, bar._model.x, bar._model.y + 20);
-
-                        });
-                    });
-
-                }
-
+                "duration": 1
             }
         }
     });
@@ -317,11 +285,11 @@ $.ajax({
         awal : awal,
         akhir : akhir
     },
-    daataType: 'json',
+    dataType: 'json',
     success: function (response) {
         let dataResult = response.finalResult;
         var html = '';
-        var table = $('#detnegara tbody');
+        var table = $('#detnegaratbl tbody');
 
         dataResult.forEach(data => {
             html += "<tr><td>" + data.negara + "</td><td>" + data.kode + "</td><td>" + data.total + "</td></tr>";
@@ -348,15 +316,27 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
             tahun: tahun,
             awal: awal,
             akhir: akhir
+        },
+        dataType: 'json',
+    success: function (response) {
+        let dataResult = response.finalResult;
+        var html = '';
+        var table = $('#detpelabuhantbl tbody');
 
-        },
-        success: function (data) {
-            console.log(data);
-        },
-        error: function (data) {
-            console.log(data);
-        }
-    });
+        dataResult.forEach(data => {
+            html += "<tr><td>" + data.pel + "</td><td>" + data.kode + "</td><td>" + data.total + "</td></tr>";
+        })
+
+        table.empty();
+        table.append(html);
+        $('#Modaldetailpelabuhanpendapatan').modal('show');
+        
+    },
+    error: function (data) {
+        console.log(data);
+    }
+});
+
 
 }
 
