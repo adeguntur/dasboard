@@ -1,8 +1,12 @@
 $(document).ready(function(tahun,awal,ahir){
     var today = new Date();
     var awal = 1;
-    var ahir = today.getMonth() + 1; //January is 0!
+    var ahir = today.getMonth() + 1; //January = 0!
     var tahun = today.getFullYear();
+
+     $('#kl').prop('disabled', 'disabled');
+     $('#komoditi').prop('disabled', 'disabled');
+     $('#notif').prop('disabled', 'disabled');
 
     $('#tahun').val(tahun);
     $('#awal').val(awal);
@@ -21,7 +25,7 @@ $(document).ready(function(tahun,awal,ahir){
        var ahir = $('#ahir').val();
        short(tahun, awal, ahir);
     });
-    $('#ahir').change(function () {
+    $('#ahir').change(function () {;
         var tahun = $('#tahun').val();
         var awal = $('#awal').val();
         var ahir = $('#ahir').val();
@@ -79,8 +83,10 @@ async function getPelabuhan(chart, kode, total) {
     var progress = document.getElementById('animationProgresspel');
 
     for (var i in kode) {
+         var bilangan = (total[i] / 1000).toFixed(0);
         labels.push(kode[i]);
-        jml_pemasukan.push(total[i]);
+        jml_pemasukan.push(bilangan);
+        console.log(bilangan);
     }
 
     var chartData = {
@@ -94,6 +100,7 @@ async function getPelabuhan(chart, kode, total) {
     };
 
     var ctx = document.getElementById("pelabuhan-pemasukan")
+    
     var chart = new Chart(ctx, {
         type: 'bar',
         data: chartData,
@@ -343,7 +350,7 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
         var table = $('#detpelabuhantbl tbody');
 
         dataResult.forEach(data => {
-            var bilangan = data.total/1000;
+            var bilangan = (data.total / 1000).toFixed(0);
             var number_string = bilangan.toString(),
                 sisa = number_string.length % 3,
                 rupiah = number_string.substr(0, sisa),
@@ -354,7 +361,7 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
                 rupiah += separator + ribuan.join('.');
             }
 
-            html += "<tr><td>" + data.pel + "</td><td>" + data.kode + "</td><td>" + data.total + "</td></tr>";
+            html += "<tr><td>" + data.pel + "</td><td>" + data.kode + "</td><td> Rp." + rupiah + "</td></tr>";
         })
 
         table.empty();
