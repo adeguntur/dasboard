@@ -4,81 +4,6 @@ class C_Index {
    async index(req, res){
       res.render('index', {})
     }
-
-    async chartApi(req, res){
-      var pelabuhanKode = [];
-      var pelabuhanJmlpemasukan = [];
-      var negaraKode = [];
-      var negaraTotal = [];
-      var importirNama = [];
-      var importirTotal = [];
-      var border = [];
-      var realisasiBorder = [];
-
-      //pelabuhan
-      await db.any("SELECT kode_pelabuhan AS kode_pelabuhan, SUM(cif_rp) as " +
-      "total from (SELECT SUBSTRING(pelbkr, 3) AS kode_pelabuhan, (cif * ndpbm) AS cif_rp, pibtg " +
-      "FROM nswdb1.tblpibhdr WHERE pibtg BETWEEN '2019-01-01' AND '2019-12-31' GROUP BY pelbkr, cif_rp, pibtg) as foo " +
-      "group by kode_pelabuhan order by total desc limit 5;")
-        .then((result) => {
-          for (let i = 0; i < result.length; i++) {
-            pelabuhanKode.push(result[i].kode_pelabuhan);
-            pelabuhanJmlpemasukan.push(result[i].total)
-          }
-        })
-        .catch((err) => {});
-
-      //negara impport
-      await db.any("select pasokneg, SUM(cif_rp) as total from" +
-      "(SELECT pasokneg, (cif * ndpbm) AS cif_rp, pibtg FROM nswdb1.tblpibhdr " +
-      "WHERE pibtg BETWEEN '2019-01-01' AND '2019-12-31' GROUP BY pasokneg, cif_rp, pibtg) as foo" +
-      " group by pasokneg order by total desc limit 5;")
-        .then((result) => {
-          for (let i = 0; i < result.length; i++) {
-            negaraKode.push(result[i].pasokneg);
-            negaraTotal.push(result[i].total);
-          }
-          
-        })
-        .catch((err) => {});
-
-      //importir
-      await db.any("select impnama, SUM(cif_rp) as total from (SELECT impnama, (cif * ndpbm) AS cif_rp FROM nswdb1.tblpibhdr GROUP BY impnama,cif_rp) as foo group by impnama order by total desc limit 10;")
-        .then((result) => {
-          for (let i = 0; i < result.length; i++) {
-            importirNama.push(result[i].impnama);
-            importirTotal.push(result[i].total)
-          }
-       
-        })
-        .catch((err) => {})
-
-      //Border
-      await db.any(" SELECT date_part('month', a.pibtg) as bulan_pib, b.dcif, a.ndpbm"+
-      "FROM tblpibhdr a JOIN tblpibdtl b ON a.cusdecid = b.cusdecid JOIN tblctl_postborder c ON c.cusdecid = a.cusdecid"+
-      "JOIN tblrealisasi_postborder d ON d.seq = c.seq AND d.seri_brg = b.serial AND b.nohs::text = d.hs_code::text"+
-      "WHERE a.pibtg >= '2019-01-01'::date AND a.pibtg <= '2019-12-31'::date ")
-        .then((result) => {
-          console.log(result)
-          for (let i = 0; i < result.length; i++) {
-            bulan_pib_B.push(result[i].bulan_pib);
-            dcif_B.push(result[i].dcif);
-            ndpbm_B.push(result[i].ndpbm)
-          }
-        })
-        .catch((err) => {})
-
-
-
-       res.send({
-           kode_pelabuhan: pelabuhanKode,
-           jml_pemasukan: pelabuhanJmlpemasukan,
-           kode_negara: negaraKode,
-           totalimport_negara: negaraTotal,
-           nama_importir: importirNama,
-           total_importir: importirTotal
-       })
-    }
     
     async postchartApi(req, res) {
       var pelabuhanKode = [];
@@ -87,8 +12,12 @@ class C_Index {
       var negaraTotal = [];
       var importirNama = [];
       var importirTotal = [];
-      var border = [];
-      var realisasiBorder = [];
+      var bulan_pib_Bdr = [];
+      var total_Bdr = [];
+      var bulan_pib_PostBdr = [];
+      var total_PostBdr = [];
+      var bulan_pib_Nawas = [];
+      var total_Nawas = [];
 
       const {
         tahun,
@@ -135,18 +64,57 @@ class C_Index {
         .catch((err) => {})
 
       //Border
-      await db.any(" SELECT date_part('month', a.pibtg) as bulan_pib, b.dcif, a.ndpbm" +
-          "FROM tblpibhdr a JOIN tblpibdtl b ON a.cusdecid = b.cusdecid JOIN tblctl_postborder c ON c.cusdecid = a.cusdecid" +
-          "JOIN tblrealisasi_postborder d ON d.seq = c.seq AND d.seri_brg = b.serial AND b.nohs::text = d.hs_code::text" +
-          "WHERE (date_part('month', a.pibtg) >= $2 AND(date_part('month', a.pibtg) <= $3 and date_part('year', a.pibtg) = $1)) ", [tahun, awal, ahir])
+      await db.any("select bulan_pib_B, sum (cif_rp) as total_B from ( "+
+      " select date_part('month', a.pibtg) as bulan_pib_B, a.car, "+
+      " b.nohs AS hs_code, b.serial AS seri_barang, f.kd_ijin, b.brgurai AS uraian_barang, b.jmlsat AS jml_satuan, "+
+      " b.kdsat AS kd_satuan, b.brgasal AS kd_negara_asal,''::character varying AS kd_notifikasi, f.kd_komoditi, "+
+      " '1'::text AS kd_border, b.dcif * a.ndpbm AS cif_rp FROM tblpibhdr a JOIN tblpibdtl b ON a.cusdecid = b.cusdecid "+
+      " JOIN tbllartas_hdr e ON e.cusdecid = a.cusdecid JOIN tbllartas_ok f ON e.seq = f.seq AND f.seri_brg = b.serial AND f.kdhs::text = b.nohs::text "+
+      "JOIN tblctl_postborder c ON c.cusdecid = a.cusdecid LEFT JOIN tblrealisasi_postborder d ON d.seq = c.seq "+
+      "AND d.seri_brg = b.serial AND b.nohs::text = d.hs_code::text "+
+      "WHERE(date_part('month', a.pibtg) >= $2 and(date_part('month', a.pibtg) <= $3 and date_part('year', a.pibtg) = $1))) as foo group by bulan_pib_B;",[tahun, awal, ahir])
         .then((result) => {
+          console.log(result)
           for (let i = 0; i < result.length; i++) {
-            bulan_pib_B.push(result[i].bulan_pib);
-            dcif_B.push(result[i].dcif);
-            ndpbm_B.push(result[i].ndpbm)
+            bulan_pib_Bdr.push(result[i].bulan_pib_B);
+            total_Bdr.push(result[i].total_B);
           }
         })
         .catch((err) => {})
+
+      //Post Border
+      await db.any("select bulan_pib_PB, sum (cif_rp) as total_PB from ( "+
+      " select date_part('month', a.pibtg) as bulan_pib_PB, a.car, b.nohs AS hs_code, b.serial AS seri_barang, d.kd_ijin, "+
+      " b.brgurai AS uraian_barang, b.jmlsat AS jml_satuan, b.kdsat AS kd_satuan, b.brgasal AS kd_negara_asal, d.statusijin AS kd_notifikasi, "+
+      " d.kd_komoditi, '2'::text AS kd_border, b.dcif * a.ndpbm AS cif_rp, a.pibtg AS tgl_pib FROM tblpibhdr a JOIN tblpibdtl b ON a.cusdecid = b.cusdecid "+
+      " JOIN tblctl_postborder c ON c.cusdecid = a.cusdecid JOIN tblrealisasi_postborder d ON d.seq = c.seq AND d.seri_brg = b.serial "+
+      "AND b.nohs::text = d.hs_code::text WHERE(date_part('month', a.pibtg) >= $2 and(date_part('month', a.pibtg) <= $3 and date_part('year', a.pibtg) = $1))) as foo group by bulan_pib_B;",[tahun, awal, ahir])
+        .then((result) => {
+          console.log(result)
+          for (let i = 0; i < result.length; i++) {
+            bulan_pib_PostBdr.push(result[i].bulan_pib_PB);
+            total_PostBdr.push(result[i].total_PB);
+          }
+        })
+        .catch((err) => {})
+
+        //non pengawasan
+        await db.any("select bulan_pib_Nw, sum (cif_rp) as total_Nw from ( "+
+        " select date_part('month', a.pibtg) as bulan_pib_Nw, a.car, b.nohs AS hs_code, b.serial AS seri_barang, "+
+        " f.kd_ijin, b.brgurai AS uraian_barang, b.jmlsat AS jml_satuan, b.kdsat AS kd_satuan, b.brgasal AS kd_negara_asal, "+
+        " ''::character varying AS kd_notifikasi, f.kd_komoditi,'3'::text AS kd_border, b.dcif * a.ndpbm AS cif_rp, a.pibtg AS tgl_pib "+
+        " FROM tblpibhdr a JOIN tblpibdtl b ON a.cusdecid = b.cusdecid LEFT JOIN tbllartas_hdr e ON e.cusdecid = a.cusdecid "+
+        " LEFT JOIN tbllartas_ok f ON e.seq = f.seq AND f.seri_brg = b.serial AND f.kdhs::text = b.nohs::text "+
+        " LEFT JOIN tblctl_postborder c ON c.cusdecid = a.cusdecid LEFT JOIN tblrealisasi_postborder d ON d.seq = c.seq AND d.seri_brg = b.serial AND b.nohs::text = d.hs_code::text "+
+        " WHERE(date_part('month', a.pibtg) >= $2 and(date_part('month', a.pibtg) <=$3 and date_part('year', a.pibtg) = $1))) as foo group by bulan_pib_B;", [tahun, awal, ahir])
+          .then((result) => {
+            console.log(result)
+            for (let i = 0; i < result.length; i++) {
+              bulan_pib_Nawas.push(result[i].bulan_pib_Nw);
+              total_Nawas.push(result[i].total_Nw);
+            }
+          })
+          .catch((err) => {})
 
       res.send({
         kode_pelabuhan: pelabuhanKode,
@@ -154,7 +122,13 @@ class C_Index {
         kode_negara: negaraKode,
         totalimport_negara: negaraTotal,
         nama_importir: importirNama,
-        total_importir: importirTotal
+        total_importir: importirTotal,
+        bulan_border: bulan_pib_Bdr,
+        total_border: total_Bdr,
+        bulan_postborder: bulan_pib_PostBdr,
+        total_postborder: total_PostBdr,
+        bulan_nawas: bulan_pib_Nawas,
+        total_nawas: total_Nawas
       })
     }
 
