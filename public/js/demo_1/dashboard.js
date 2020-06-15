@@ -13,6 +13,18 @@ $(document).ready(function(tahun,awal,ahir){
     $('#ahir').val(ahir);
     short(tahun, awal, ahir); //pencarian data awal
     $("#cari").hide();
+
+    $("#nav-realisasi-tab").click(function () {
+      $("#kl").prop("disabled", "disabled");
+      $("#komoditi").prop("disabled", "disabled");
+      $("#notif").prop("disabled", "disabled");
+    });
+
+    $("#nav-postborderjenis-tab").click(function () {
+      $("#kl").prop("disabled", false);
+      $("#komoditi").prop("disabled", false);
+      $("#notif").prop("disabled", false);
+    });
     
     $('#cari').click(function () {
         $("#loading").show(); //awal loading label
@@ -38,11 +50,9 @@ $(document).ready(function(tahun,awal,ahir){
                     getPelabuhan('pelabuhan-pemasukan', data.kode_pelabuhan, data.jml_pemasukan);
                     getNegaraimport('negara-import', data.kode_negara, data.totalimport_negara);
                     getImportir('importir-terbesar', data.nama_importir, data.total_importir);
+                    getRealisasiimport('perkembangan-realisasi', data.bulan_border, data.total_border, data.bulan_postborder, data.total_postborder, data.bulan_nawas, data.total_nawas);
                     $("#loading").hide();
-                    $("#cari").show(); 
-                    //getBorder('perkembangan-realisasi');
-                    //getPostborder('perkembangan-realisasi');
-                    //getNonijin('perkembangan-realisasi');
+                    $("#cari").show();
                 },
                 error: function (data) {
                     console.log(data);
@@ -56,13 +66,12 @@ $(document).ready(function(tahun,awal,ahir){
 async function getPelabuhan(chart, kode, total) {
     var labels = [];
     var jml_pemasukan = [];
-    var progress = document.getElementById('animationProgresspel');
+    var progress = document.getElementById('animationProgresspel' );
 
     for (var i in kode) {
         var bilangan = (total[i] / 1000).toFixed(0);
         labels.push(kode[i]);
         jml_pemasukan.push(bilangan);
-        //console.log(bilangan);
     }
 
     var chartData = {
@@ -142,8 +151,9 @@ async function getNegaraimport(chart, kode, total) {
 
     var chartData = {
         labels: labels,
-        datasets: [{
-            label: "Thousands (RP)",
+        datasets: [
+        {
+            label: "(Thousand Rp.)",
             backgroundColor: ["#878787", "#ffa07a", "#ffda00", "#00ff5f", "#ff007f"],
             fill: false,
             data: totalimportNegara
@@ -158,10 +168,11 @@ async function getNegaraimport(chart, kode, total) {
         options: {
             responsive: true,
             legend: {
+                position: 'bottom',
                 display: false
             },
             title: {
-                display: true,
+                display: false,
             },
             scales: {
                 yAxes: [{
@@ -212,7 +223,7 @@ async function getImportir(chart, kode, total) {
     for (var i in kode) {
         var bilangan = (total[i] / 1000).toFixed(0);
         labels.push(kode[i]);
-        total_importir.push(bilangan);
+        total.push(bilangan);
     }
 
     var chartData = {
@@ -233,8 +244,14 @@ async function getImportir(chart, kode, total) {
         options: {
             responsive: true,
             legend: {
-                display: false
-            },
+                position: 'bottom',
+                display: true,
+                labels: {
+                    filter: function (legendItem, data) {
+                        return legendItem.index != 1
+                    }
+                }
+            }, 
             title: {
                 display: true,
             },
@@ -277,6 +294,94 @@ async function getImportir(chart, kode, total) {
             }
         }
     });
+}
+//Perkembangan realisasi import 
+async function getRealisasiimport(chart, bulan_border, total_border, bulan_postborder, total_postborder, bulan_nawas, total_nawas) {
+var bilangan_border = [];
+var bilangan_postborder = [];
+var totalborder = [];
+var totalpostborder = [];
+var progress = document.getElementById('animationProgressrel');
+
+for (var i in bulan_border) {
+    var bilangan_border = (total_border[i] / 1000).toFixed(0);
+    var bilangan_postborder = (total_postborder[i] / 1000).toFixed(0);
+    totalborder.push(bilangan_border);
+    totalpostborder.push(bilangan_postborder);
+    //console.log(bilangan_border);
+}
+
+redrawCanvas("perkembangan-realisasi-canvas", "perkembangan-realisasi");
+
+var ctx = document.getElementById("perkembangan-realisasi")
+var chart = new Chart(ctx,{
+          type: 'bar',
+          data: {
+          labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Des"],
+          datasets: [
+          {
+            label: "Border",
+            borderWidth: 1,
+            backgroundColor: "#878787",
+            data: totalborder
+          },
+          {
+            label: "Post Border",
+            borderWidth: 1,
+            backgroundColor: "#ff007f",
+            data: totalpostborder
+          },
+          {
+            label: "Non Ijin",
+            borderWidth: 1,
+            backgroundColor: "#964b00",
+            data: [200, 50, 30, 80, 70]
+          },
+        ]
+          },
+          options: {
+            responsive: true,
+             legend: {
+                 position: 'bottom',
+                 display: true,
+                 labels: {
+                     filter: function (legendItem, data) {
+                         return legendItem.index != 1
+                     }
+                 }
+             },
+            title: {
+              display: true,
+            },
+             scales: {
+               yAxes: [{
+                 ticks: {
+                   beginAtZero: true
+                 }
+               }],
+               xAxes: [{
+                 gridLines: {
+                   display: false
+                 },
+                 ticks: {
+                   beginAtZero: true
+                 }
+               }]
+             },
+             "hover": {
+               "animationDuration": 0
+             },
+             onClick: function (event, array) {
+             },animation: {
+                onProgress: function (animation) {
+                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                },
+                onAnimationComplete: function (animation) {
+                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                }
+            }
+          }
+        })
 }
 
 //grafik detail negara
