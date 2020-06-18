@@ -120,16 +120,6 @@ async function getPelabuhan(chart, kode, total) {
 
     for (var i in kode) {
         var bilangan = (total[i] / 1000000).toFixed(0); //penggunaan bilangan jutaan
-        // var number_string = bilangan.toString(),
-        //     sisa = number_string.length % 3,
-        //     rupiah = number_string.substr(0, sisa),
-        //     ribuan = number_string.substr(sisa).match(/\d{3}/g);
-
-        // if (ribuan) {
-        //     separator = sisa ? '.' : '';
-        //     rupiah += separator + ribuan.join('.');
-       // }
-       // console.log(bilangan)
         labels.push(kode[i]);
         jml_pemasukan.push(bilangan);
     }
@@ -151,6 +141,19 @@ async function getPelabuhan(chart, kode, total) {
         data: chartData,
         options: {
             responsive: true,
+            tooltips: {
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        //kode di sini, return harus berupa string yang ingin ditampilkan
+                        var val = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                        if (parseInt(val) >= 1000) {
+                            return 'in millions Rp. ' + val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                        } else {
+                            return 'in millions Rp. ' + val;
+                        }
+                    }
+                }
+            },
             legend: {
                 display: false
             },
@@ -241,6 +244,19 @@ async function getNegaraimport(chart, kode, total) {
         data: chartData,
         options: {
             responsive: true,
+            tooltips: {
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        //kode di sini, return harus berupa string yang ingin ditampilkan
+                        var val = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                        if (parseInt(val) >= 1000) {
+                            return 'in millions Rp. ' + val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                        } else {
+                            return 'in millions Rp. ' + val;
+                        }
+                    }
+                }
+            },
             legend: {
                 position: 'bottom',
                 display: false
@@ -323,6 +339,19 @@ async function getImportir(chart, kode, total) {
         data: chartData,
         options: {
             responsive: true,
+            tooltips: {
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        //kode di sini, return harus berupa string yang ingin ditampilkan
+                        var val = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                        if (parseInt(val) >= 1000) {
+                            return 'in millions Rp. ' + val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                        } else {
+                            return 'in millions Rp. ' + val;
+                        }
+                    }
+                }
+            },
             legend: {
                 position: 'bottom',
                 display: true,
@@ -427,6 +456,19 @@ var chart = new Chart(ctx,{
           },
           options: {
             responsive: true,
+            tooltips: {
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        //kode di sini, return harus berupa string yang ingin ditampilkan
+                        var val = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                        if (parseInt(val) >= 1000) {
+                            return 'in millions Rp. ' + val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                        } else {
+                            return 'in millions Rp. ' + val;
+                        }
+                    }
+                }
+            },
              legend: {
                  position: 'bottom',
                  display: true,
@@ -528,6 +570,19 @@ async function getRealisasiimportper(chart) {
         },
         options: {
             responsive: true,
+            tooltips: {
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        //kode di sini, return harus berupa string yang ingin ditampilkan
+                        var val = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                        if (parseInt(val) >= 1000) {
+                            return 'in millions Rp. ' + val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                        } else {
+                            return 'in millions Rp. ' + val;
+                        }
+                    }
+                }
+            },
             legend: {
                 position: 'bottom',
                 display: true,
