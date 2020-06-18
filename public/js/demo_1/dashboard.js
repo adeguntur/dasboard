@@ -112,9 +112,6 @@ $(document).ready(function(tahun,awal,ahir){
     }
     
 });
-
-
-
 //grafik top 5 pelabuhan pendapatan
 async function getPelabuhan(chart, kode, total) {
     var labels = [];
@@ -122,7 +119,7 @@ async function getPelabuhan(chart, kode, total) {
     var progress = document.getElementById('animationProgresspel' );
 
     for (var i in kode) {
-        var bilangan = (total[i] / 1000).toFixed(0); //penggunaan bilangan ribuan
+        var bilangan = (total[i] / 1000000).toFixed(0); //penggunaan bilangan jutaan
         // var number_string = bilangan.toString(),
         //     sisa = number_string.length % 3,
         //     rupiah = number_string.substr(0, sisa),
@@ -140,7 +137,7 @@ async function getPelabuhan(chart, kode, total) {
     var chartData = {
         labels: labels,
         datasets: [{
-            label: "Thousands (RP)",
+            label: "Millions (RP)",
             backgroundColor: ["#878787", "#ffa07a", "#ffda00", "#00ff5f", "#ff007f"],
             fill: false,
             data: jml_pemasukan
@@ -163,7 +160,14 @@ async function getPelabuhan(chart, kode, total) {
             scales: {
                 yAxes: [{
                     ticks: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        callback: function (value, index, values) {
+                            if (parseInt(value) >= 1000) {
+                                return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                            } else {
+                                return value;
+                            }
+                        }
                     }
                 }],
                 xAxes: [{
@@ -171,7 +175,14 @@ async function getPelabuhan(chart, kode, total) {
                         display: false
                     },
                     ticks: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        callback: function (value, index, values) {
+                            if (parseInt(value) >= 1000) {
+                                return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                            } else {
+                                return value;
+                            }
+                        }
                     }
                 }]
             },
@@ -207,7 +218,7 @@ async function getNegaraimport(chart, kode, total) {
     var progress = document.getElementById('animationProgressneg');
 
     for(var i in kode) {
-        var bilangan = (total[i] / 1000).toFixed(0); //penggunaan bilangan ribuan
+        var bilangan = (total[i] / 1000000).toFixed(0);
         labels.push(kode[i]);
         totalimportNegara.push(bilangan);
     }
@@ -216,7 +227,7 @@ async function getNegaraimport(chart, kode, total) {
         labels: labels,
         datasets: [
         {
-            label: "(Thousand Rp.)",
+            label: "(Millions Rp.)",
             backgroundColor: ["#878787", "#ffa07a", "#ffda00", "#00ff5f", "#ff007f"],
             fill: false,
             data: totalimportNegara
@@ -240,7 +251,14 @@ async function getNegaraimport(chart, kode, total) {
             scales: {
                 yAxes: [{
                     ticks: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        callback: function (value, index, values) {
+                            if (parseInt(value) >= 1000) {
+                                return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                            } else {
+                                return value;
+                            }
+                        }
                     }
                 }],
                 xAxes: [{
@@ -284,18 +302,17 @@ async function getImportir(chart, kode, total) {
     var progress = document.getElementById('animationProgressimportir');
 
     for (var i in kode) {
-        var bilangan = (total[i] / 1000).toFixed(0); //penggunaan bilangan ribuan
+        var bilangan = (total[i] / 1000000).toFixed(0); //penggunaan bilangan jutaan
         labels.push(kode[i]);
-        total.push(bilangan);
+        total_importir.push(bilangan);
     }
-
     var chartData = {
         labels: labels,
         datasets: [{
-            label: "Thousands (RP)",
+            label: "Millions (RP)",
             backgroundColor: "#808080",
             fill: false,
-            data: total
+            data: total_importir
         }]
     };
     redrawCanvas("importir-canvas", "importir-terbesar");
@@ -329,7 +346,14 @@ async function getImportir(chart, kode, total) {
                         display: false
                     },
                     ticks: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                            callback: function (value, index, values) {
+                                if (parseInt(value) >= 1000) {
+                                    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                                } else {
+                                    return value;
+                                }
+                            }
                     }
                 }]
             },
@@ -367,11 +391,10 @@ var totalpostborder = [];
 var progress = document.getElementById('animationProgressrel');
 
 for (var i in bulan_border) {
-    var bilangan_border = (total_border[i] / 1000).toFixed(0);//penggunaan bilangan ribuan
-    var bilangan_postborder = (total_postborder[i] / 1000).toFixed(0);//penggunaan bilangan ribuan
+    var bilangan_border = (total_border[i] / 1000000).toFixed(0);//penggunaan bilangan jutaan
+    var bilangan_postborder = (total_postborder[i] / 1000000).toFixed(0);//penggunaan bilangan jutaan
     totalborder.push(bilangan_border);
     totalpostborder.push(bilangan_postborder);
-    //console.log(bilangan_border);
 }
 
 redrawCanvas("perkembangan-realisasi-canvas", "perkembangan-realisasi");
@@ -398,7 +421,7 @@ var chart = new Chart(ctx,{
             label: "Non Ijin",
             borderWidth: 1,
             backgroundColor: "#964b00",
-            data: [200, 50, 30, 80, 70] //dumy data sementara
+            data: [200, 50, 30, 80, 70] //dumy data sementara tunggu datamart
           },
         ]
           },
@@ -419,7 +442,14 @@ var chart = new Chart(ctx,{
              scales: {
                yAxes: [{
                  ticks: {
-                   beginAtZero: true
+                   beginAtZero: true,
+                   callback: function (value, index, values) {
+                       if (parseInt(value) >= 1000) {
+                           return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                       } else {
+                           return value;
+                       }
+                   }
                  }
                }],
                xAxes: [{
@@ -558,7 +588,17 @@ $.ajax({
         var table = $('#detnegaratbl tbody');
 
         dataResult.forEach(data => {
-            html += "<tr><td>" + data.negara + "</td><td>" + data.kode + "</td><td>" + data.total + "</td></tr>";
+            var bilangan = (data.total / 1000000).toFixed(0);
+            var number_string = bilangan.toString(),
+                sisa = number_string.length % 3,
+                rupiah = number_string.substr(0, sisa),
+                ribuan = number_string.substr(sisa).match(/\d{3}/g);
+
+            if (ribuan) {
+                separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+            html += "<tr><td>" + data.negara + "</td><td>" + data.kode + "</td><td>" + rupiah + "</td></tr>";
         })
 
         table.empty();
@@ -570,7 +610,6 @@ $.ajax({
         console.log(data);
     }
 });
-
 }
 //grafik detail pelabuhan   
 function detailpelabuhan(kdpel, tahun, awal, akhir) {
@@ -590,7 +629,7 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
         var table = $('#detpelabuhantbl tbody');
 
         dataResult.forEach(data => {
-            var bilangan = (data.total / 1000).toFixed(0);
+            var bilangan = (data.total / 1000000).toFixed(0);
             var number_string = bilangan.toString(),
                 sisa = number_string.length % 3,
                 rupiah = number_string.substr(0, sisa),
@@ -614,7 +653,6 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
     }
 });
 }
-
 //grafik detail importir
 function detailimportir(kode, tahun, awal, akhir) {
     $.ajax({
@@ -627,13 +665,12 @@ function detailimportir(kode, tahun, awal, akhir) {
             akhir: akhir
         },
         success: function (response) {
-
         let dataResult = response.finalResult;
         var html = '';
         var table = $('#detimportirtbl tbody');
 
         dataResult.forEach(data => {
-            var bilangan = (data.total / 1000).toFixed(0);
+            var bilangan = (data.total / 1000000).toFixed(0);
             var number_string = bilangan.toString(),
                 sisa = number_string.length % 3,
                 rupiah = number_string.substr(0, sisa),
@@ -650,9 +687,6 @@ function detailimportir(kode, tahun, awal, akhir) {
         table.append(html);
 
         $('#Modaldetailimportir').modal('show')
-
-
-
         },
         error: function (data) {
             console.log(data);
