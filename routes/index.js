@@ -16,4 +16,7 @@ router.post('/api/detpel', index.detailpelpenApi)
 //api detailpelabuhan
 router.post('/api/detimportir', index.detailimportirApi)
 
+//api post pb
+router.post('/api/postborder', index.butonpostborderApi)
+
 module.exports = router

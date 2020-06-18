@@ -251,6 +251,7 @@ class C_Index {
               kodesatuan: result[i].kdsat,
               npwp: result[i].npwp,
               importir: result[i].importir
+              
             })
           }
         })
@@ -263,6 +264,45 @@ class C_Index {
       })
 
     }
+
+     async butonpostborderApi(req, res) {
+       var finalResult = [];
+
+       const {
+         tahun,
+         awal,
+         akhir
+       } = req.body;
+
+       await db.any(
+           "SELECT a.pibno, a.pibtg  as tgl_pib, b.serial as seri_barang, b.jmlsat as jml_satuan, b.kdsat, a.impnpwp as npwp, a.impnama as importir FROM " +
+           "nswdb1.tblpibhdr a JOIN nswdb1.tblpibdtl b ON a.cusdecid = b.cusdecid JOIN nswdb1.tbllartas_hdr e ON e.cusdecid = a.cusdecid " +
+           "JOIN nswdb1.tbllartas_ok f ON e.seq = f.seq AND f.seri_brg = b.serial AND f.kdhs::text = b.nohs::text " +
+           "JOIN nswdb1.tblctl_postborder c ON c.cusdecid = a.cusdecid where(date_part('month', a.pibtg) >= $2 AND(date_part('month', a.pibtg) <= $3 and date_part('year', a.pibtg) = $1));", [tahun, awal, akhir])
+         .then((result) => {
+           for (let i = 0; i < result.length; i++) {
+
+             finalResult.push({
+               nopib: result[i].pibno,
+               tglpib: result[i].tgl_pib,
+               seribarang: result[i].seri_barang,
+               jmlsatuan: result[i].jml_satuan,
+               kodesatuan: result[i].kdsat,
+               npwp: result[i].npwp,
+               importir: result[i].importir
+
+             })
+           }
+         })
+         .catch((err) => {
+           console.log(err)
+         })
+
+       res.send({
+         finalResult: finalResult
+       })
+
+     }
 
 }
 module.exports = new C_Index();

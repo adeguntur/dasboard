@@ -7,6 +7,7 @@ $(document).ready(function(tahun,awal,ahir){
      $('#kl').prop('disabled', 'disabled');
      $('#komoditi').prop('disabled', 'disabled');
      $('#notif').prop('disabled', 'disabled');
+     //$('#Modaldetailimportir').hide();
 
     $('#tahun').val(tahun);
     $('#awal').val(awal);
@@ -35,6 +36,13 @@ $(document).ready(function(tahun,awal,ahir){
        short(tahun,awal,ahir);
     });
 
+    $('#pb').click(function () {
+        var tahun = $('#tahun').val();
+        var awal = $('#awal').val();
+        var ahir = $('#ahir').val();
+        shortpb(tahun, awal, ahir);
+    });
+
     function short(tahun,awal,ahir) {
 
             $.ajax({
@@ -51,6 +59,7 @@ $(document).ready(function(tahun,awal,ahir){
                     getNegaraimport('negara-import', data.kode_negara, data.totalimport_negara);
                     getImportir('importir-terbesar', data.nama_importir, data.total_importir);
                     getRealisasiimport('perkembangan-realisasi', data.bulan_border, data.total_border, data.bulan_postborder, data.total_postborder, data.bulan_nawas, data.total_nawas);
+                    getRealisasiimportper('perkembangan - realisasiper');
                     $("#loading").hide();
                     $("#cari").show();
                 },
@@ -59,8 +68,52 @@ $(document).ready(function(tahun,awal,ahir){
                 }
             })
     }
+
+    function shortpb(tahun, awal, ahir) {
+
+        $.ajax({
+            url: 'http://localhost:3000/api/postborder',
+            method: 'POST',
+            data: {
+                tahun: tahun,
+                awal: awal,
+                akhir: ahir
+            },
+            success: function (response) {
+                console.log("AAa")
+                let dataResult = response.finalResult;
+                var html = '';
+                var table = $('#detimportirtbl tbody');
+
+                dataResult.forEach(data => {
+                    var bilangan = (data.total / 1000).toFixed(0);
+                    var number_string = bilangan.toString(),
+                        sisa = number_string.length % 3,
+                        rupiah = number_string.substr(0, sisa),
+                        ribuan = number_string.substr(sisa).match(/\d{3}/g);
+
+                    if (ribuan) {
+                        separator = sisa ? '.' : '';
+                        rupiah += separator + ribuan.join('.');
+                    }
+
+                    html += "<tr><td>" + data.nopib + "</td><td>" + data.tglpib + "</td><td>" + data.seribarang + "</td><td>" + data.jmlsatuan + "</td><td>" + data.kodesatuan + "</td><td>" + data.npwp + "</td><td>" + data.importir + "</td></tr>";
+                })
+                table.empty();
+                table.append(html);
+
+                $('#Modaldetailimportir').modal('show')
+
+            },
+            error: function (data) {
+                console.log(data);
+            }
+        });
+    }
     
 });
+
+
 
 //grafik top 5 pelabuhan pendapatan
 async function getPelabuhan(chart, kode, total) {
@@ -69,7 +122,17 @@ async function getPelabuhan(chart, kode, total) {
     var progress = document.getElementById('animationProgresspel' );
 
     for (var i in kode) {
-        var bilangan = (total[i] / 1000).toFixed(0);
+        var bilangan = (total[i] / 1000).toFixed(0); //penggunaan bilangan ribuan
+        // var number_string = bilangan.toString(),
+        //     sisa = number_string.length % 3,
+        //     rupiah = number_string.substr(0, sisa),
+        //     ribuan = number_string.substr(sisa).match(/\d{3}/g);
+
+        // if (ribuan) {
+        //     separator = sisa ? '.' : '';
+        //     rupiah += separator + ribuan.join('.');
+       // }
+       // console.log(bilangan)
         labels.push(kode[i]);
         jml_pemasukan.push(bilangan);
     }
@@ -144,7 +207,7 @@ async function getNegaraimport(chart, kode, total) {
     var progress = document.getElementById('animationProgressneg');
 
     for(var i in kode) {
-        var bilangan = (total[i] / 1000).toFixed(0);
+        var bilangan = (total[i] / 1000).toFixed(0); //penggunaan bilangan ribuan
         labels.push(kode[i]);
         totalimportNegara.push(bilangan);
     }
@@ -221,7 +284,7 @@ async function getImportir(chart, kode, total) {
     var progress = document.getElementById('animationProgressimportir');
 
     for (var i in kode) {
-        var bilangan = (total[i] / 1000).toFixed(0);
+        var bilangan = (total[i] / 1000).toFixed(0); //penggunaan bilangan ribuan
         labels.push(kode[i]);
         total.push(bilangan);
     }
@@ -304,8 +367,8 @@ var totalpostborder = [];
 var progress = document.getElementById('animationProgressrel');
 
 for (var i in bulan_border) {
-    var bilangan_border = (total_border[i] / 1000).toFixed(0);
-    var bilangan_postborder = (total_postborder[i] / 1000).toFixed(0);
+    var bilangan_border = (total_border[i] / 1000).toFixed(0);//penggunaan bilangan ribuan
+    var bilangan_postborder = (total_postborder[i] / 1000).toFixed(0);//penggunaan bilangan ribuan
     totalborder.push(bilangan_border);
     totalpostborder.push(bilangan_postborder);
     //console.log(bilangan_border);
@@ -335,7 +398,7 @@ var chart = new Chart(ctx,{
             label: "Non Ijin",
             borderWidth: 1,
             backgroundColor: "#964b00",
-            data: [200, 50, 30, 80, 70]
+            data: [200, 50, 30, 80, 70] //dumy data sementara
           },
         ]
           },
@@ -383,7 +446,100 @@ var chart = new Chart(ctx,{
           }
         })
 }
+//Perkembangan realisasi import per
+async function getRealisasiimportper(chart) {
+    // var bilangan_border = [];
+    // var bilangan_postborder = [];
+    // var totalborder = [];
+    // var totalpostborder = [];
+    var progress = document.getElementById('animationProgressrelper');
 
+    // for (var i in bulan_border) {
+    //     var bilangan_border = (total_border[i] / 1000).toFixed(0);//penggunaan bilangan ribuan
+    //     var bilangan_postborder = (total_postborder[i] / 1000).toFixed(0);//penggunaan bilangan ribuan
+    //     totalborder.push(bilangan_border);
+    //     totalpostborder.push(bilangan_postborder);
+    //     //console.log(bilangan_border);
+    // }
+
+    redrawCanvas("perkembangan-realisasiper-canvas", "perkembangan-realisasiper");
+
+    var ctx = document.getElementById("perkembangan-realisasiper")
+    var chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Des"],
+            datasets: [
+                {
+                    label: "01",
+                    borderWidth: 1,
+                    backgroundColor: "#808080",
+                    data: [200, 50, 30, 80, 70] //dumy data sementara
+                },
+                {
+                    label: "11",
+                    borderWidth: 1,
+                    backgroundColor: "#964b00",
+                    data: [200, 50, 30, 80, 70] //dumy data sementara
+                },
+                {
+                    label: "12",
+                    borderWidth: 1,
+                    backgroundColor: "#ffff00",
+                    data: [200, 50, 30, 80, 70] //dumy data sementara
+                },
+                {
+                    label: "13",
+                    borderWidth: 1,
+                    backgroundColor: "#008000",
+                    data: [200, 50, 30, 80, 70] //dumy data sementara
+                },
+            ]
+        },
+        options: {
+            responsive: true,
+            legend: {
+                position: 'bottom',
+                display: true,
+                labels: {
+                    filter: function (legendItem, data) {
+                        return legendItem.index != 1
+                    }
+                }
+            },
+            title: {
+                display: true,
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }],
+                xAxes: [{
+                    gridLines: {
+                        display: false
+                    },
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            },
+            "hover": {
+                "animationDuration": 0
+            },
+            onClick: function (event, array) {
+            }, animation: {
+                onProgress: function (animation) {
+                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                },
+                onAnimationComplete: function (animation) {
+                    progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
+                }
+            }
+        }
+    })
+}
 //grafik detail negara
 function detailnegara(kdneg, tahun, awal, akhir) {
 $.ajax({
@@ -457,9 +613,8 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
         console.log(data);
     }
 });
-
-
 }
+
 //grafik detail importir
 function detailimportir(kode, tahun, awal, akhir) {
     $.ajax({
@@ -470,10 +625,34 @@ function detailimportir(kode, tahun, awal, akhir) {
             tahun: tahun,
             awal: awal,
             akhir: akhir
-
         },
-        success: function (data) {
-            console.log(data);
+        success: function (response) {
+
+        let dataResult = response.finalResult;
+        var html = '';
+        var table = $('#detimportirtbl tbody');
+
+        dataResult.forEach(data => {
+            var bilangan = (data.total / 1000).toFixed(0);
+            var number_string = bilangan.toString(),
+                sisa = number_string.length % 3,
+                rupiah = number_string.substr(0, sisa),
+                ribuan = number_string.substr(sisa).match(/\d{3}/g);
+
+            if (ribuan) {
+                separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+
+            html += "<tr><td>" + data.nopib + "</td><td>" + data.tglpib + "</td><td>" + data.seribarang + "</td><td>" + data.jmlsatuan + "</td><td>" + data.kodesatuan + "</td><td>" + data.npwp + "</td><td>" + data.importir + "</td></tr>";
+        })
+        table.empty();
+        table.append(html);
+
+        $('#Modaldetailimportir').modal('show')
+
+
+
         },
         error: function (data) {
             console.log(data);
