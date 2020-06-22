@@ -11,6 +11,7 @@ class C_Index {
       var negaraKode = [];
       var negaraTotal = [];
       var importirNama = [];
+      var nama_importir = []; 
       var importirTotal = [];
       var bulan_pibB = [];
       var total_B = [];
@@ -18,18 +19,27 @@ class C_Index {
       var total_PostBdr = [];
       var bulan_pib_Nawas = [];
       var total_Nawas = [];
+      var bulan_pib_01 = [];
+      var total_01 = [];
+      var bulan_pib_11 = [];
+      var total_11 = [];
+      var bulan_pib_12 = [];
+      var total_12 = [];
+      var bulan_pib_13 = [];
+      var total_13 = [];
 
       const {
         tahun,
         awal,
-        ahir
+        ahir,
+        kl,
+        komoditi
       } = req.body;
 
-      //pelabuhan
-      await db.any("SELECT kode_pelabuhan AS kode_pelabuhan, SUM(cif_rp) as " +
-          "total from (SELECT SUBSTRING(pelbkr, 3) AS kode_pelabuhan, (cif * ndpbm) AS cif_rp, pibtg " +
-          "FROM nswdb1.tblpibhdr WHERE (date_part('month', pibtg) >= $2 AND(date_part('month', pibtg) <= $3 and date_part('year', pibtg) = $1))  GROUP BY pelbkr, cif_rp, pibtg) as foo " +
-          "group by kode_pelabuhan order by total desc limit 5;", [tahun, awal, ahir])
+      //pelabuhan 
+      await db.any("SELECT SUBSTRING(a.kd_pelabuhan_masuk, 3) AS kode_pelabuhan, coalesce(sum(a.cif_rupiah),0) total " +
+      "FROM nswdbpb.dm_pelmasuk_importir a INNER JOIN nswdbdwh.dim_date b on a.bulan_pib = b.month "+
+      "WHERE a.bulan_pib >= $2 and a.bulan_pib <= $3 and a.tahun_pib = $1 GROUP BY a.kd_pelabuhan_masuk ORDER BY total desc limit 5;", [tahun, awal, ahir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
             pelabuhanKode.push(result[i].kode_pelabuhan);
@@ -41,13 +51,12 @@ class C_Index {
         });
 
       //negara import
-      await db.any("select pasokneg, SUM(cif_rp) as total from" +
-          "(SELECT pasokneg, (cif * ndpbm) AS cif_rp, pibtg FROM nswdb1.tblpibhdr " +
-          "WHERE (date_part('month', pibtg) >= $2 AND(date_part('month', pibtg) <= $3 and date_part('year', pibtg) = $1)) GROUP BY pasokneg, cif_rp, pibtg) as foo" +
-          " group by pasokneg order by total desc limit 5;", [tahun, awal, ahir])
+      await db.any("SELECT kd_negara_asal, coalesce(sum(cif_rupiah),0) as total FROM "+
+      "nswdbpb.dm_negasal_imp a "+
+      "WHERE a.bulan_pib >= $2 and a.bulan_pib <= $3 and tahun_pib = $1 group by kd_negara_asal ORDER BY total desc limit 5;", [tahun, awal, ahir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
-            negaraKode.push(result[i].pasokneg);
+            negaraKode.push(result[i].kd_negara_asal);
             negaraTotal.push(result[i].total);
           }
 
@@ -57,12 +66,12 @@ class C_Index {
         });
 
       //importir
-      await db.any("select impnama, SUM(cif_rp) as total from (SELECT impnama, (cif * ndpbm) AS cif_rp FROM nswdb1.tblpibhdr "+
-      " WHERE (date_part('month', pibtg) >= 02 AND (date_part('month', pibtg) <= $3 and date_part('year', pibtg) = $1)) "+
-      "GROUP BY impnama,cif_rp) as foo group by impnama order by total desc limit 10;", [tahun, awal, ahir])
+      await db.any("SELECT a.nama_importir, coalesce(sum(a.cif_rupiah),0) total FROM "+
+      "nswdbpb.dm_pelmasuk_importir a INNER JOIN nswdbdwh.dim_date b on a.bulan_pib = b.month "+
+      "WHERE a.bulan_pib >= $2 and a.bulan_pib <= $3 and a.tahun_pib = $1 GROUP BY a.nama_importir ORDER BY total desc limit 10;", [tahun, awal, ahir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
-            importirNama.push(result[i].impnama);
+            importirNama.push(result[i].nama_importir);
             importirTotal.push(result[i].total)
           }
 
@@ -74,20 +83,14 @@ class C_Index {
       //Border
       await db
         .any(
-          "select bulan_pib_b, sum (cif_rp) as total_b from ( " +
-            " select date_part('month', a.pibtg) as bulan_pib_B, a.car, " +
-            " b.nohs AS hs_code, b.serial AS seri_barang, f.kd_ijin, b.brgurai AS uraian_barang, b.jmlsat AS jml_satuan, " +
-            " b.kdsat AS kd_satuan, b.brgasal AS kd_negara_asal,''::character varying AS kd_notifikasi, f.kd_komoditi, " +
-            " '1'::text AS kd_border, b.dcif * a.ndpbm AS cif_rp FROM nswdb1.tblpibhdr a JOIN nswdb1.tblpibdtl b ON a.cusdecid = b.cusdecid " +
-            " JOIN nswdb1.tbllartas_hdr e ON e.cusdecid = a.cusdecid JOIN nswdb1.tbllartas_ok f ON e.seq = f.seq AND f.seri_brg = b.serial AND f.kdhs::text = b.nohs::text " +
-            " JOIN nswdb1.tblctl_postborder c ON c.cusdecid = a.cusdecid LEFT JOIN nswdb1.tblrealisasi_postborder d ON d.seq = c.seq " +
-            " AND d.seri_brg = b.serial AND b.nohs::text = d.hs_code::text " +
-            " WHERE(date_part('month', a.pibtg) >= $2 and(date_part('month', a.pibtg) <= $3 and date_part('year', a.pibtg) = $1))) as foo group by bulan_pib_b;",[tahun, awal, ahir]
+          "SELECT b.monthabbr bulan, coalesce(sum(a.cif_rupiah),0) total FROM "+
+          "nswdbpb.dm_real_imp_border a INNER JOIN nswdbdwh.dim_date b on a.bulan_pib = b.month "+
+          "WHERE a.bulan_pib >= $2 and a.bulan_pib <= $3 and a.tahun_pib = $1 GROUP BY b.monthabbr;",[tahun, awal, ahir]
         )
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
-            bulan_pibB.push(result[i].bulan_pib_b);
-            total_B.push(result[i].total_b);
+            bulan_pibB.push(result[i].bulan);
+            total_B.push(result[i].total);
 
           }
         })
@@ -97,43 +100,93 @@ class C_Index {
 
       //Post Border
       await db
-        .any(
-          "select bulan_pib_pb, sum (cif_rp) as total_pb from ( " +
-            " select date_part('month', a.pibtg) as bulan_pib_PB, a.car, b.nohs AS hs_code, b.serial AS seri_barang, d.kd_ijin, " +
-            " b.brgurai AS uraian_barang, b.jmlsat AS jml_satuan, b.kdsat AS kd_satuan, b.brgasal AS kd_negara_asal, d.statusijin AS kd_notifikasi, " +
-            " d.kd_komoditi, '2'::text AS kd_border, b.dcif * a.ndpbm AS cif_rp, a.pibtg AS tgl_pib FROM nswdb1.tblpibhdr a JOIN nswdb1.tblpibdtl b ON a.cusdecid = b.cusdecid " +
-            " JOIN nswdb1.tblctl_postborder c ON c.cusdecid = a.cusdecid JOIN nswdb1.tblrealisasi_postborder d ON d.seq = c.seq AND d.seri_brg = b.serial " +
-            "AND b.nohs::text = d.hs_code::text WHERE(date_part('month', a.pibtg) >= $2 and(date_part('month', a.pibtg) <= $3 and date_part('year', a.pibtg) = $1))) as foo group by bulan_pib_pb;",[tahun, awal, ahir]
+        .any("SELECT b.monthabbr bulan, coalesce(sum(a.cif_rupiah),0) total FROM "+
+          "nswdbpb.dm_real_imp_postborder a INNER JOIN nswdbdwh.dim_date b on a.bulan_pib = b.month "+
+          "WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 GROUP BY b.monthabbr;", [tahun, awal, ahir]
         )
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
-            bulan_pib_PostBdr.push(result[i].bulan_pib_pb);
-            total_PostBdr.push(result[i].total_pb);
+            bulan_pib_PostBdr.push(result[i].bulan);
+            total_PostBdr.push(result[i].total);
           }
         })
         .catch((err) => {
           console.log(err);
         });
 
-        //non pengawasan
-        // await db.any("select bulan_pib_nw, sum (cif_rp) as total_nw from ( "+
-        // " select date_part('month', a.pibtg) as bulan_pib_nw, a.car, b.nohs AS hs_code, b.serial AS seri_barang, "+
-        // " f.kd_ijin, b.brgurai AS uraian_barang, b.jmlsat AS jml_satuan, b.kdsat AS kd_satuan, b.brgasal AS kd_negara_asal, "+
-        // " ''::character varying AS kd_notifikasi, f.kd_komoditi,'3'::text AS kd_border, b.dcif * a.ndpbm AS cif_rp, a.pibtg AS tgl_pib "+
-        // " FROM nswdb1.tblpibhdr a JOIN nswdb1.tblpibdtl b ON a.cusdecid = b.cusdecid LEFT JOIN nswdb1.tbllartas_hdr e ON e.cusdecid = a.cusdecid "+
-        // " LEFT JOIN nswdb1.tbllartas_ok f ON e.seq = f.seq AND f.seri_brg = b.serial AND f.kdhs::text = b.nohs::text "+
-        // " LEFT JOIN  nswdb1.tblctl_postborder c ON c.cusdecid = a.cusdecid LEFT JOIN  nswdb1.tblrealisasi_postborder d ON d.seq = c.seq AND d.seri_brg = b.serial AND b.nohs::text = d.hs_code::text "+
-        // " WHERE(date_part('month', a.pibtg) >= $2 and (date_part('month', a.pibtg) <=$3 and date_part('year', a.pibtg) = $1))) as foo group by bulan_pib_nw;",[tahun, awal, ahir])
-        //   .then((result) => {
-        //     console.log(result)
-        //     for (let i = 0; i < result.length; i++) {
-        //       bulan_pib_Nawas.push(result[i].bulan_pib_nw);
-        //       total_Nawas.push(result[i].total_nw);
-        //     }
-        //   })
-        //   .catch((err) => {
-        //     console.log(err);
-        //   })
+      //non pengawasan
+      await db.any("SELECT b.monthabbr bulan, coalesce(sum(a.cif_rupiah),0) total FROM "+
+      "nswdbpb.dm_real_imp_nonijin a INNER JOIN nswdbdwh.dim_date b on a.bulan_pib = b.month "+
+      "WHERE a.bulan_pib >= $2 and a.bulan_pib <= $3 and a.tahun_pib = $1 GROUP BY b.monthabbr;", [tahun, awal, ahir])
+        .then((result) => {
+            for (let i = 0; i < result.length; i++) {
+              bulan_pib_Nawas.push(result[i].bulan);
+              total_Nawas.push(result[i].total);
+            }
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+
+      //per notif 01
+      await db.any("SELECT b.monthabbr bulan, coalesce(sum(a.cif_rupiah),0) total "+
+      "FROM nswdbpb.dm_real_jns_postborder a INNER JOIN nswdbdwh.dim_date b on a.bulan_pib = b.month "+
+      "INNER JOIN nswdb1.tblga c on a.kd_ga = c.id_ga INNER JOIN nswdbdwh.dim_notif_postborder d on a.kd_notif_postborder = d.kd_notif_postborder "+
+      "WHERE a.bulan_pib >= $2 and a.bulan_pib >= $3 and a.tahun_pib = $1 AND a.kd_ga = $4 AND a.kd_komoditi = $5 AND a.kd_notif_postborder = '01' GROUP BY b.monthabbr ", [tahun, awal, ahir, kl, komoditi])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            bulan_pib_01.push(result[i].bulan);
+            total_01.push(result[i].total);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+      
+      //per notif 11
+      await db.any("SELECT b.monthabbr bulan, coalesce(sum(a.cif_rupiah),0) total "+
+      "FROM nswdbpb.dm_real_jns_postborder a INNER JOIN nswdbdwh.dim_date b on a.bulan_pib = b.month "+
+      "INNER JOIN nswdb1.tblga c on a.kd_ga = c.id_ga INNER JOIN nswdbdwh.dim_notif_postborder d on a.kd_notif_postborder = d.kd_notif_postborder "+
+      "WHERE a.bulan_pib >= $2 and a.bulan_pib >= $3 and a.tahun_pib = $1 AND a.kd_ga = $4 AND a.kd_komoditi = $5 AND a.kd_notif_postborder = '11' GROUP BY b.monthabbr ", [tahun, awal, ahir, kl, komoditi])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            bulan_pib_11.push(result[i].bulan);
+            total_11.push(result[i].total);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+
+      //per notif 12
+      await db.any("SELECT b.monthabbr bulan, coalesce(sum(a.cif_rupiah),0) total "+
+      "FROM nswdbpb.dm_real_jns_postborder a INNER JOIN nswdbdwh.dim_date b on a.bulan_pib = b.month "+
+      "INNER JOIN nswdb1.tblga c on a.kd_ga = c.id_ga INNER JOIN nswdbdwh.dim_notif_postborder d on a.kd_notif_postborder = d.kd_notif_postborder "+
+      "WHERE a.bulan_pib >= $2 and a.bulan_pib >= $3 and a.tahun_pib = $1 AND a.kd_ga = $4 AND a.kd_komoditi = $5 AND a.kd_notif_postborder = '12' GROUP BY b.monthabbr ", [tahun, awal, ahir, kl, komoditi])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            bulan_pib_01.push(result[i].bulan);
+            total_01.push(result[i].total);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+
+        //per notif 13
+      await db.any("SELECT b.monthabbr bulan, coalesce(sum(a.cif_rupiah),0) total "+
+      "FROM nswdbpb.dm_real_jns_postborder a INNER JOIN nswdbdwh.dim_date b on a.bulan_pib = b.month "+
+      "INNER JOIN nswdb1.tblga c on a.kd_ga = c.id_ga INNER JOIN nswdbdwh.dim_notif_postborder d on a.kd_notif_postborder = d.kd_notif_postborder "+
+      "WHERE a.bulan_pib >= $2 and a.bulan_pib >= $3 and a.tahun_pib = $1 AND a.kd_ga = $4 AND a.kd_komoditi = $5 AND a.kd_notif_postborder = '13' GROUP BY b.monthabbr ", [tahun, awal, ahir, kl, komoditi])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            bulan_pib_01.push(result[i].bulan);
+            total_01.push(result[i].total);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        })
 
       res.send({
         kode_pelabuhan: pelabuhanKode,
@@ -147,7 +200,15 @@ class C_Index {
         bulan_postborder: bulan_pib_PostBdr,
         total_postborder: total_PostBdr,
         bulan_nawas: bulan_pib_Nawas,
-        total_nawas: total_Nawas
+        total_nawas: total_Nawas,
+        bulan_01: bulan_pib_01,
+        total_01: total_01,
+        bulan_11: bulan_pib_11,
+        total_11: total_11,
+        bulan_12: bulan_pib_12,
+        total_12: total_12,
+        bulan_13: bulan_pib_13,
+        total_13: total_13
       })
     }
 

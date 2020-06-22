@@ -6,7 +6,6 @@ $(document).ready(function(tahun,awal,ahir){
 
      $('#kl').prop('disabled', 'disabled');
      $('#komoditi').prop('disabled', 'disabled');
-     $('#notif').prop('disabled', 'disabled');
      //$('#Modaldetailimportir').hide();
 
     $('#tahun').val(tahun);
@@ -19,12 +18,13 @@ $(document).ready(function(tahun,awal,ahir){
       $("#kl").prop("disabled", "disabled");
       $("#komoditi").prop("disabled", "disabled");
       $("#notif").prop("disabled", "disabled");
+      $("#kl").val("0").change();
+      $("#komoditi").val("0").change();
     });
 
     $("#nav-postborderjenis-tab").click(function () {
       $("#kl").prop("disabled", false);
       $("#komoditi").prop("disabled", false);
-      $("#notif").prop("disabled", false);
     });
     
     $('#cari').click(function () {
@@ -33,7 +33,10 @@ $(document).ready(function(tahun,awal,ahir){
         var tahun = $('#tahun').val();
         var awal = $('#awal').val();
         var ahir = $('#ahir').val();
-       short(tahun,awal,ahir);
+        var kl = $('#kl').val();
+        var komoditi = $('#komoditi').val();
+        short(tahun,awal,ahir,kl,komoditi);
+        
     });
 
     $('#pb').click(function () {
@@ -43,7 +46,7 @@ $(document).ready(function(tahun,awal,ahir){
         shortpb(tahun, awal, ahir);
     });
 
-    function short(tahun,awal,ahir) {
+    function short(tahun,awal,ahir,kl,komoditi) {
 
             $.ajax({
                 url: 'http://localhost:3000/api/grafik',
@@ -51,7 +54,9 @@ $(document).ready(function(tahun,awal,ahir){
                 data: {
                     tahun: tahun,
                     awal: awal,
-                    ahir: ahir
+                    ahir: ahir,
+                    kl:kl,
+                    komoditi:komoditi
                 },
                 dataType:'json',
                 success: function (data) {
@@ -59,7 +64,7 @@ $(document).ready(function(tahun,awal,ahir){
                     getNegaraimport('negara-import', data.kode_negara, data.totalimport_negara);
                     getImportir('importir-terbesar', data.nama_importir, data.total_importir);
                     getRealisasiimport('perkembangan-realisasi', data.bulan_border, data.total_border, data.bulan_postborder, data.total_postborder, data.bulan_nawas, data.total_nawas);
-                    getRealisasiimportper('perkembangan - realisasiper');
+                    getRealisasiimportper('perkembangan - realisasiper', data.bulan_01, data.total_01, data.bulan_11, data.total_11, data.bulan_12, data.total_12, data.bulan_13, data.total_13);
                     $("#loading").hide();
                     $("#cari").show();
                 },
@@ -68,6 +73,7 @@ $(document).ready(function(tahun,awal,ahir){
                 }
             })
     }
+
 
     function shortpb(tahun, awal, ahir) {
 
@@ -80,7 +86,6 @@ $(document).ready(function(tahun,awal,ahir){
                 akhir: ahir
             },
             success: function (response) {
-                console.log("AAa")
                 let dataResult = response.finalResult;
                 var html = '';
                 var table = $('#detimportirtbl tbody');
@@ -313,19 +318,23 @@ async function getNegaraimport(chart, kode, total) {
 }
 //grafik top 10 importir  terbesar
 async function getImportir(chart, kode, total) {
+    var lb = [];
     var labels = [];
+    var res = [];
     var total_importir = [];
     var progress = document.getElementById('animationProgressimportir');
 
     for (var i in kode) {
         var bilangan = (total[i] / 1000000).toFixed(0); //penggunaan bilangan jutaan
+        //var lb = kode[i];
+        //var res = lb.substring(0, 15);
         labels.push(kode[i]);
         total_importir.push(bilangan);
     }
     var chartData = {
         labels: labels,
         datasets: [{
-            label: "Millions (RP)",
+            label: "in millions Rp.",
             backgroundColor: "#808080",
             fill: false,
             data: total_importir
@@ -345,9 +354,9 @@ async function getImportir(chart, kode, total) {
                         //kode di sini, return harus berupa string yang ingin ditampilkan
                         var val = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
                         if (parseInt(val) >= 1000) {
-                            return 'in millions Rp. ' + val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                            return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                         } else {
-                            return 'in millions Rp. ' + val;
+                            return val;
                         }
                     }
                 }
@@ -415,15 +424,20 @@ async function getImportir(chart, kode, total) {
 async function getRealisasiimport(chart, bulan_border, total_border, bulan_postborder, total_postborder, bulan_nawas, total_nawas) {
 var bilangan_border = [];
 var bilangan_postborder = [];
+var bilangan_nonijin = [];
 var totalborder = [];
 var totalpostborder = [];
+var totalnonijin = [];
 var progress = document.getElementById('animationProgressrel');
 
 for (var i in bulan_border) {
     var bilangan_border = (total_border[i] / 1000000).toFixed(0);//penggunaan bilangan jutaan
     var bilangan_postborder = (total_postborder[i] / 1000000).toFixed(0);//penggunaan bilangan jutaan
+    var bilangan_nonijin = (total_nawas[i] / 1000000).toFixed(0); //penggunaan bilangan jutaan
+    
     totalborder.push(bilangan_border);
     totalpostborder.push(bilangan_postborder);
+    totalnonijin.push(bilangan_nonijin);
 }
 
 redrawCanvas("perkembangan-realisasi-canvas", "perkembangan-realisasi");
@@ -450,7 +464,7 @@ var chart = new Chart(ctx,{
             label: "Non Ijin",
             borderWidth: 1,
             backgroundColor: "#964b00",
-            data: [200, 50, 30, 80, 70] //dumy data sementara tunggu datamart
+            data: totalnonijin
           },
         ]
           },
@@ -519,20 +533,32 @@ var chart = new Chart(ctx,{
         })
 }
 //Perkembangan realisasi import per
-async function getRealisasiimportper(chart) {
-    // var bilangan_border = [];
-    // var bilangan_postborder = [];
-    // var totalborder = [];
-    // var totalpostborder = [];
+async function getRealisasiimportper(chart, bulan_01, total_01, bulan_11, total_11, bulan_12, total_12, bulan_13, total_13) {
+    var bulan_01 = [];
+    var total_01 = [];
+    var bulan_11 = [];
+    var total_11 = [];
+    var bulan_12 = [];
+    var total_12 = [];
+    var bulan_13 = [];
+    var total_13 = [];
+    var total01 = [];
+    var total11 = [];
+    var total12 = [];
+    var total13 = [];
     var progress = document.getElementById('animationProgressrelper');
 
-    // for (var i in bulan_border) {
-    //     var bilangan_border = (total_border[i] / 1000).toFixed(0);//penggunaan bilangan ribuan
-    //     var bilangan_postborder = (total_postborder[i] / 1000).toFixed(0);//penggunaan bilangan ribuan
-    //     totalborder.push(bilangan_border);
-    //     totalpostborder.push(bilangan_postborder);
-    //     //console.log(bilangan_border);
-    // }
+    for (var i in bulan_01) {
+        var bilangan_01 = (total_01[i] / 1000000).toFixed(0);//penggunaan bilangan jutaan
+        var bilangan_11 = (total_11[i] / 1000000).toFixed(0);//penggunaan bilangan jutaan
+        var bilangan_12 = (total_12[i] / 1000000).toFixed(0); //penggunaan bilangan jutaan
+        var bilangan_13 = (total_13[i] / 1000000).toFixed(0); //penggunaan bilangan jutaan
+
+        total01.push(bilangan_01);
+        total11.push(bilangan_11);
+        total12.push(bilangan_12);
+        total13.push(bilangan_13);
+    }
 
     redrawCanvas("perkembangan-realisasiper-canvas", "perkembangan-realisasiper");
 
@@ -546,25 +572,25 @@ async function getRealisasiimportper(chart) {
                     label: "01",
                     borderWidth: 1,
                     backgroundColor: "#808080",
-                    data: [200, 50, 30, 80, 70] //dumy data sementara
+                    data: total01
                 },
                 {
                     label: "11",
                     borderWidth: 1,
                     backgroundColor: "#964b00",
-                    data: [200, 50, 30, 80, 70] //dumy data sementara
+                    data: total11
                 },
                 {
                     label: "12",
                     borderWidth: 1,
                     backgroundColor: "#ffff00",
-                    data: [200, 50, 30, 80, 70] //dumy data sementara
+                    data: total12
                 },
                 {
                     label: "13",
                     borderWidth: 1,
                     backgroundColor: "#008000",
-                    data: [200, 50, 30, 80, 70] //dumy data sementara
+                    data: total_13
                 },
             ]
         },
