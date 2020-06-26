@@ -44,24 +44,24 @@
           <div class="col-md-6 grid-margin">
             <div class="card">
               <div class="card-body">
-                <h4 class="card-title mb-0">5 NEGARA ASAL IMPORT TERBESAR</h4>
+                <h4 class="card-title mb-0">5 NEGARA ASAL IMPORT TERBESAR <br />(in millions Rp.)</h4>
                 <div id="negara-import-canvas">
                   <canvas class="mt-4" height="300" id="negara-import"></canvas>
                 </div>
-                <h5>(in millions Rp.)</h5>
                 <progress id="animationProgressneg" max="1" value="0" style="width: 100%"></progress>
+                <label id="labelProgressneg" style="width: 100%">Loading request data ...</label>
               </div>
             </div>
           </div>
           <div class="col-md-6 grid-margin">
             <div class="card">
               <div class="card-body">
-                <h4 class="card-title mb-0">5 PELABUHAN PEMASUKAN TERBESAR</h4>
+                <h4 class="card-title mb-0">5 PELABUHAN PEMASUKAN TERBESAR <br />(in millions Rp.)</h4>
                 <div id="pendapatan-pelabuhan-canvas">
                   <canvas class="mt-4" height="300" id="pelabuhan-pemasukan"></canvas>
                 </div>
-                <h5>(in millions Rp.)</h5>
                 <progress id="animationProgresspel" max="1" value="0" style="width: 100%"></progress>
+                <label id="labelProgresspel" style="width: 100%">Loading request data ...</label>
               </div>
             </div>
           </div>
@@ -76,21 +76,21 @@
                 </nav>
                 <div class="tab-content">
                   <div class="tab-pane fade show active" id="realisasiimpor" role="tabpanel">
-                    <h4 class="card-title mb-0">PERKEMBANGAN REALISASI IMPORT</h4>
+                    <h4 class="card-title mb-0">PERKEMBANGAN REALISASI IMPORT <br />(in millions Rp.)</h4>
                     <div id="perkembangan-realisasi-canvas">
                       <canvas class="mt-4" height="300" id="perkembangan-realisasi"></canvas>
                     </div>
-                    <h5>(in millions Rp.)</h5>
                     <progress id="animationProgressrel" max="1" value="0" style="width: 100%"></progress>
+                    <label id="labelProgressrel" style="width: 100%">Loading request data ...</label>
                     <button nama="pb" id="pb" class="btn btn-primary btn-block"> Post Border </button>
                   </div>
                   <div class="tab-pane fade" id="postborderperjenis" role="tabpanel">
-                    <h4 class="card-title mb-0">PERKEMBANGAN IMPOR KOMODITI POST BORDER PER - JENIS NOTIFIKASI</h4>
+                    <h4 class="card-title mb-0">PERKEMBANGAN IMPOR KOMODITI POST BORDER PER - JENIS NOTIFIKASI (in millions Rp.)</h4>
                     <div id="perkembangan-realisasiper-canvas">
                       <canvas class="mt-4" height="300" id="perkembangan-realisasiper"></canvas>
                     </div>
-                    <h5>(in millions Rp.)</h5>
                     <progress id="animationProgressrelper" max="1" value="0" style="width: 100%"></progress>
+                    <label id="labelProgressrelper" style="width: 100%" >Loading request data ...</label>
                   </div>
                 </div>
               </div>
@@ -153,6 +153,7 @@
                   <hr />
                   <div class="wrapper border-bottom mb-6 pb-6">
                     <div class="form-group row">
+                      <label class="col-sm-12 col-form-label">MEMPENGARUHI CHART PERJENIS</label>
                       <label class="col-sm-12 col-form-label">K/L :</label>
                       <select id="kl">
                         <option value="0" selected>--</option>
@@ -216,6 +217,9 @@
         <div id="loading" class="spinner-border text-primary -sm" role="status">
           <span class="sr-only"></span>
         </div>
+        <div id="loading1">
+          <label>LOADING REQUEST DATA...</label>
+        </div>
       </div>
       </div>
       <div class="col-md-12 grid-margin">
@@ -226,6 +230,7 @@
               <canvas class="mt-4" height="300" id="importir-terbesar"></canvas>
             </div>
             <progress id="animationProgressimportir" max="1" value="0" style="width: 100%"></progress>
+            <label id="labelProgressimportir" style="width: 100%">Loading request data ...</label>
           </div>
         </div>
       </div>
@@ -234,7 +239,7 @@
   </div>
 <!-- Modal -->
 <div class="modal modal-lg" id="Modaldetailnegaraimpor" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
+  <div class="modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -264,7 +269,7 @@
   </div>
 </div>
 <div class="modal modal-lg" id="Modaldetailpelabuhanpendapatan" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
+  <div class="modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -279,7 +284,7 @@
               <tr>
                 <th>Pelabuhan</th>
                 <th>Komoditas</th>
-                <h5>(in millions Rp.)</h5>
+                <th>Nilai Import</th>
               </tr>
             </thead>
             <tbody>
@@ -306,13 +311,9 @@
           <table class="table table-bordered" id="detimportirtbl">
             <thead>
               <tr>
-                <th>No PIB</th>
-                <th>Tgl PIB</th>
-                <th>Seri Barang</th>
-                <th>Jml Satuan</th>
-                <th>Kode Satuan</th>
-                <th>NPWP</th>
                 <th>Importir</th>
+                <th>Komoditi</th>
+                <th>Total</th>
               </tr>
             </thead>
             <tbody>

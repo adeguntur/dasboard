@@ -13,6 +13,7 @@ $(document).ready(function(tahun,awal,ahir){
     $('#ahir').val(ahir);
     short(tahun, awal, ahir); //pencarian data awal
     $("#cari").hide();
+    
 
     $("#nav-realisasi-tab").click(function () {
       $("#kl").prop("disabled", "disabled");
@@ -29,7 +30,21 @@ $(document).ready(function(tahun,awal,ahir){
     
     $('#cari').click(function () {
         $("#loading").show(); //awal loading label
+        $("#loading1").show();
         $("#cari").hide();
+
+        $("#animationProgressneg").hide();
+        $("#animationProgresspel").hide();
+        $("#animationProgressrel").hide();
+        $("#animationProgressrelper").hide();
+        $("#animationProgressimportir").hide();
+
+        $("#labelProgressneg").show();
+        $("#labelProgresspel").show();
+        $("#labelProgressrel").show();
+        $("#labelProgressrelper").show();
+        $("#labelProgressimportir").show();
+
         var tahun = $('#tahun').val();
         var awal = $('#awal').val();
         var ahir = $('#ahir').val();
@@ -64,8 +79,23 @@ $(document).ready(function(tahun,awal,ahir){
                     getNegaraimport('negara-import', data.kode_negara, data.totalimport_negara);
                     getImportir('importir-terbesar', data.nama_importir, data.total_importir);
                     getRealisasiimport('perkembangan-realisasi', data.bulan_border, data.total_border, data.bulan_postborder, data.total_postborder, data.bulan_nawas, data.total_nawas);
-                    getRealisasiimportper('perkembangan - realisasiper', data.bulan_01, data.total_01, data.bulan_11, data.total_11, data.bulan_12, data.total_12, data.bulan_13, data.total_13);
+                    getRealisasiimportper('perkembangan-realisasiper', data.bulan_01, data.total_01, data.bulan_11, data.total_11, data.bulan_12, data.total_12, data.bulan_13, data.total_13);
+                    console.log(data);
+
+                    $("#animationProgressneg").hide();
+                    $("#animationProgresspel").hide();
+                    $("#animationProgressrel").hide();
+                    $("#animationProgressrelper").hide();
+                    $("#animationProgressimportir").hide();
+                    
+                    $("#labelProgressneg").hide();
+                    $("#labelProgresspel").hide();
+                    $("#labelProgressrel").hide();
+                    $("#labelProgressrelper").hide();
+                    $("#labelProgressimportir").hide();
+                    
                     $("#loading").hide();
+                    $("#loading1").hide();
                     $("#cari").show();
                 },
                 error: function (data) {
@@ -450,19 +480,19 @@ var chart = new Chart(ctx,{
           datasets: [
           {
             label: "Border",
-            borderWidth: 1,
+            borderWidth: 0,
             backgroundColor: "#878787",
             data: totalborder
           },
           {
             label: "Post Border",
-            borderWidth: 1,
+            borderWidth: 0,
             backgroundColor: "#ff007f",
             data: totalpostborder
           },
           {
             label: "Non Ijin",
-            borderWidth: 1,
+            borderWidth: 0,
             backgroundColor: "#964b00",
             data: totalnonijin
           },
@@ -473,7 +503,6 @@ var chart = new Chart(ctx,{
             tooltips: {
                 callbacks: {
                     label: function (tooltipItem, data) {
-                        //kode di sini, return harus berupa string yang ingin ditampilkan
                         var val = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
                         if (parseInt(val) >= 1000) {
                             return 'in millions Rp. ' + val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -534,26 +563,19 @@ var chart = new Chart(ctx,{
 }
 //Perkembangan realisasi import per
 async function getRealisasiimportper(chart, bulan_01, total_01, bulan_11, total_11, bulan_12, total_12, bulan_13, total_13) {
-    var bulan_01 = [];
-    var total_01 = [];
-    var bulan_11 = [];
-    var total_11 = [];
-    var bulan_12 = [];
-    var total_12 = [];
-    var bulan_13 = [];
-    var total_13 = [];
     var total01 = [];
     var total11 = [];
     var total12 = [];
     var total13 = [];
     var progress = document.getElementById('animationProgressrelper');
 
+    
     for (var i in bulan_01) {
         var bilangan_01 = (total_01[i] / 1000000).toFixed(0);//penggunaan bilangan jutaan
         var bilangan_11 = (total_11[i] / 1000000).toFixed(0);//penggunaan bilangan jutaan
         var bilangan_12 = (total_12[i] / 1000000).toFixed(0); //penggunaan bilangan jutaan
         var bilangan_13 = (total_13[i] / 1000000).toFixed(0); //penggunaan bilangan jutaan
-
+        
         total01.push(bilangan_01);
         total11.push(bilangan_11);
         total12.push(bilangan_12);
@@ -590,8 +612,8 @@ async function getRealisasiimportper(chart, bulan_01, total_01, bulan_11, total_
                     label: "13",
                     borderWidth: 1,
                     backgroundColor: "#008000",
-                    data: total_13
-                },
+                    data: total13
+                }
             ]
         },
         options: {
@@ -679,7 +701,7 @@ $.ajax({
                 separator = sisa ? '.' : '';
                 rupiah += separator + ribuan.join('.');
             }
-            html += "<tr><td>" + data.negara + "</td><td>" + data.kode + "</td><td>" + rupiah + "</td></tr>";
+            html += "<tr><td>" + data.negara + "</td><td>" + data.kode + "</td><td> (in millions) Rp." + rupiah + "</td></tr>";
         })
 
         table.empty();
@@ -721,7 +743,7 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
                 rupiah += separator + ribuan.join('.');
             }
 
-            html += "<tr><td>" + data.pel + "</td><td>" + data.kode + "</td><td> Rp." + rupiah + "</td></tr>";
+            html += "<tr><td>" + data.pel + "</td><td>" + data.kode + "</td><td> (in millions) Rp." + rupiah + "</td></tr>";
         })
 
         table.empty();
@@ -751,7 +773,7 @@ function detailimportir(kode, tahun, awal, akhir) {
         var table = $('#detimportirtbl tbody');
 
         dataResult.forEach(data => {
-            var bilangan = (data.total / 1000000).toFixed(0);
+            var bilangan = (data.total_detimportir / 1000000).toFixed(0);
             var number_string = bilangan.toString(),
                 sisa = number_string.length % 3,
                 rupiah = number_string.substr(0, sisa),
@@ -762,7 +784,7 @@ function detailimportir(kode, tahun, awal, akhir) {
                 rupiah += separator + ribuan.join('.');
             }
 
-            html += "<tr><td>" + data.nopib + "</td><td>" + data.tglpib + "</td><td>" + data.seribarang + "</td><td>" + data.jmlsatuan + "</td><td>" + data.kodesatuan + "</td><td>" + data.npwp + "</td><td>" + data.importir + "</td></tr>";
+            html += "<tr><td>" + data.nama_importir + "</td><td>" + data.komoditi + "</td><td> (in millions) Rp." + rupiah + "</td></tr>";
         })
         table.empty();
         table.append(html);
