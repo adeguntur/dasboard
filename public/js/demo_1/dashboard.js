@@ -701,7 +701,7 @@ $.ajax({
                 separator = sisa ? '.' : '';
                 rupiah += separator + ribuan.join('.');
             }
-            html += "<tr><td>" + data.kode + "</td><td> (in millions) Rp." + rupiah + "</td></tr>";
+            html += "<tr><td>"+ data.negara +"</td><td>" + data.kode + " </td><td> (in millions) Rp." + rupiah + "</td></tr>";
         })
 
         table.empty();
@@ -743,7 +743,7 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
                 totalfix += separator + ribuan.join('.');
             }
 
-            html += "<tr><td>" + data.kode + "</td><td> total document pib = " + totalfix + "</td></tr>";
+            html += "<tr><td>"+ data.kdpel +"</td><td>" + data.kode + " </td><td> total document pib = " + totalfix + "</td > < /tr>";
         })
 
         table.empty();
