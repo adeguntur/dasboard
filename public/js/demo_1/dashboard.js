@@ -768,7 +768,7 @@ $.ajax({
                 separator = sisa ? '.' : '';
                 rupiah += separator + ribuan.join('.');
             }
-            html += "<tr><td>"+ data.negara +"</td><td>" + data.kode + " </td><td> (in millions) Rp." + rupiah + "</td></tr>";
+            html += "<tr><td>" + data.negara + "</td><td>" + data.kode + " </td><td> (in millions) Rp. </td><td align='right' >" + rupiah + "</td></tr>";
         })
 
         table.empty();
@@ -811,7 +811,7 @@ function detailnegaralkp(kdneg, tahun, awal, akhir, kl, komoditi) {
                     separator = sisa ? '.' : '';
                     rupiah += separator + ribuan.join('.');
                 }
-                html += "<tr><td>" + data.negara + "</td><td>" + data.kode + " </td><td> (in millions) Rp." + rupiah + "</td></tr>";
+                html += "<tr><td>" + data.negara + "</td><td>" + data.kode + " </td><td> (in millions) Rp. </td><td align='right' >" + rupiah + "</td></tr>";
             })
 
             table.empty();
@@ -853,7 +853,7 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
                 totalfix += separator + ribuan.join('.');
             }
 
-            html += "<tr><td>"+ data.kdpel +"</td><td>" + data.kode + " </td><td> total document pib = " + totalfix + "</td > < /tr>";
+            html += "<tr><td>" + data.kdpel + "</td><td>" + data.kode + " </td><td> total document pib = </td><td align='right'>" + totalfix + "</td > < /tr>";
         })
 
         table.empty();
@@ -897,7 +897,7 @@ function detailpelabuhanlkp(kdpel, tahun, awal, akhir, kl, komoditi) {
                     totalfix += separator + ribuan.join('.');
                 }
 
-                html += "<tr><td>" + data.kdpel + "</td><td>" + data.kode + " </td><td> total document pib = " + totalfix + "</td > < /tr>";
+                html += "<tr><td>" + data.kdpel + "</td><td>" + data.kode + " </td><td> total document pib = </td><td align='right'>" + totalfix + "</td > < /tr>";
             })
 
             table.empty();
@@ -938,7 +938,7 @@ function detailimportir(kode, tahun, awal, akhir) {
                 rupiah += separator + ribuan.join('.');
             }
 
-            html += "<tr><td>" + data.nama_importir + "</td><td>" + data.komoditi + "</td><td> (in millions) Rp." + rupiah + "</td></tr>";
+            html += "<tr><td>" + data.nama_importir + "</td><td>" + data.komoditi + " </td><td> (in millions) Rp. </td><td align='left' >" + rupiah + "</td></tr>";
         })
         table.empty();
         table.append(html);
