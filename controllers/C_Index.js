@@ -38,7 +38,7 @@ class C_Index {
 
       //negara import
       await db.any("SELECT kd_negara_asal, coalesce(sum(cif_rupiah),0) as total FROM "+
-      "nswdbpb.dm_negasal_imp a "+
+      "nswdbpb.dm_negasal_imp_kom a "+
       "WHERE a.bulan_pib >= $2 and a.bulan_pib <= $3 and tahun_pib = $1 group by kd_negara_asal ORDER BY total desc limit 5;", [tahun, awal, ahir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
@@ -52,11 +52,13 @@ class C_Index {
         });
 
       //pelabuhan 
-      await db.any("SELECT kd_pelabuhan_masuk AS kode_pelabuhan, coalesce(sum(cif_rupiah),0) total "+
-          "FROM nswdbpb.dm_pelmasuk_importir WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 GROUP BY kd_pelabuhan_masuk ORDER BY total desc limit 5;", [tahun, awal, ahir])
+      await db.any("select b.kd_pel , sum(jml_dok_pib) total "+
+          "from nswdbpb.dm_pelmasuk_importir a inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
+          "where a.bulan_pib >= $2 and a.bulan_pib <= $3 and a.tahun_pib = $1 "+
+          "group by b.kd_pel order by total desc limit 5 ; ", [tahun, awal, ahir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
-            pelabuhanKode.push(result[i].kode_pelabuhan);
+            pelabuhanKode.push(result[i].kd_pel);
             pelabuhanJmlpemasukan.push(result[i].total)
           }
         })
@@ -226,16 +228,19 @@ class C_Index {
       } = req.body;
       
       await db.any(
-        "SELECT a.kd_negara_asal, b.ur_komoditi, coalesce(sum(a.cif_rupiah), 0) as total "+
-        "FROM nswdbpb.dm_negasal_imp_kom a, nswdbdwh.dim_komoditi b "+
-        "WHERE bulan_pib >=$3  and bulan_pib <= $4 and tahun_pib = $2 and kd_negara_asal = $1 "+
-        "group by a.kd_negara_asal, b.ur_komoditi ORDER BY total desc limit 5;", [kdneg, tahun, awal, akhir])
+        "select ur_komoditi, "+ 
+        "sum(a.cif_rupiah) total_cif_rp "+
+        "from nswdbpb.dm_negasal_imp_kom a "+
+        "inner join nswdb1.tblnegara b on a.kd_negara_asal = b.kdedi "+
+        "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi "+
+        "where a.bulan_pib >= $3 and a.bulan_pib <= $4 and a.tahun_pib = $2 and b.kdedi = $1 "+
+        "group by c.ur_komoditi order by total_cif_rp desc limit 10 ", [kdneg, tahun, awal, akhir])
          .then((result) => {
               for (let i = 0; i < result.length; i++) {
                 finalResult.push({
-                  negara: result[i].kd_negara_asal,
+                  // negara: result[i].kd_negara_asal,
                   kode: result[i].ur_komoditi,
-                  total: result[i].total
+                  total: result[i].total_cif_rp
                 })
               }
         })
@@ -261,19 +266,23 @@ class C_Index {
       } = req.body;
 
       await db.any(
-          "SELECT a.kd_pelabuhan_masuk AS kode_pelabuhan , b.ur_komoditi,coalesce(sum(a.cif_rupiah), 0) total "+
-          "FROM nswdbpb.dm_pelmasuk_imp_kom a, nswdbdwh.dim_komoditi b "+
-          "WHERE a.bulan_pib >= $3 and a.bulan_pib <= $4 and a.tahun_pib = $2 and a.kd_pelabuhan_masuk = $1 "+
-          "GROUP BY a.kd_pelabuhan_masuk, b.ur_komoditi ORDER BY total desc limit 5; ", [kdpel, tahun, awal, akhir])
+          "select case when c.ur_komoditi is null then 'non' else c.ur_komoditi end as komoditi, sum(jml_dok_pib) total_dok_pib "+
+          "from nswdbpb.dm_pelmasuk_imp_kom a "+
+          "inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
+          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi "+
+          "where a.bulan_pib >= $3 "+
+          "and a.bulan_pib <= $4 "+
+          "and a.tahun_pib = $2 "+
+          "and b.kd_pel = $1 "+
+          "group by komoditi order by total_dok_pib desc limit 10 ", [kdpel, tahun, awal, akhir])
         .then((result) => {
+          console.log(result)
           for (let i = 0; i < result.length; i++) {
 
             finalResult.push({
-              pel: req.body.kdpel,
-              kode: result[i].ur_komoditi,
-              total: result[i].total
+              kode: result[i].komoditi,
+              total: result[i].total_dok_pib
             })
-            console.log(kode);
           }
         })
         .catch((err) => {
