@@ -457,6 +457,90 @@ class C_Index {
 
     }   
 
+    async detailnegaralkpApi(req, res) {
+      var finalResult = [];
+
+      const {
+        kdneg,
+        tahun,
+        awal,
+        akhir,
+        kl,
+        komoditi
+      } = req.body;
+
+      await db.any(
+          "select case when c.ur_komoditi is null then '[non]' else c.ur_komoditi end as komoditi, " +
+          "sum(a.cif_rupiah) total_cif_rp, b.uredi " +
+          "from nswdbpb.dm_negasal_imp_kom a " +
+          "inner join nswdb1.tblnegara b on a.kd_negara_asal = b.kdedi " +
+          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi " +
+          "where a.bulan_pib >= $3 and a.bulan_pib <= $4 and a.tahun_pib = $2 and b.kdedi = $1 and a.kd_ga = $5 and a.kd_komoditi = $6 " +
+          "group by c.ur_komoditi,b.uredi order by total_cif_rp desc limit 10 ", [kdneg, tahun, awal, akhir, kl, komoditi])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            finalResult.push({
+              negara: result[i].uredi,
+              kode: result[i].komoditi,
+              total: result[i].total_cif_rp
+            })
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+
+      res.send({
+        finalResult: finalResult
+      })
+
+    }
+
+    async detailpelpenlkpApi(req, res) {
+      var finalResult = [];
+      var kode = [];
+
+      const {
+        kdpel,
+        tahun,
+        awal,
+        akhir,
+        kl,
+        komoditi
+      } = req.body;
+
+      await db.any(
+          "select case when c.ur_komoditi is null then '[NON]' else c.ur_komoditi end as komoditi, sum(jml_dok_pib) total_dok_pib,b.ur_pel urpel  " +
+          "from nswdbpb.dm_pelmasuk_imp_kom a "+
+          "inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
+          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi "+
+          "where a.bulan_pib >= $3 "+
+          "and a.bulan_pib <= $4 "+
+          "and a.tahun_pib = $2 "+
+          "and b.kd_pel = $1 "+
+          "and a.kd_ga = $5 and a.kd_komoditi = $6 "+
+          "group by komoditi,urpel order by total_dok_pib desc limit 10 ", [kdpel, tahun, awal, akhir, kl, komoditi])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+
+            finalResult.push({
+              kdpel: result[i].urpel,
+              kode: result[i].komoditi,
+              total: result[i].total_dok_pib
+            })
+            console.log(result);
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+
+      res.send({
+        finalResult: finalResult
+      })
+
+    }
+
     async detailpelpenApi(req, res) {
       var finalResult = [];
       var kode = [];
@@ -470,13 +554,13 @@ class C_Index {
 
       await db.any(
           "select case when c.ur_komoditi is null then '[NON]' else c.ur_komoditi end as komoditi, sum(jml_dok_pib) total_dok_pib,b.ur_pel urpel  " +
-          "from nswdbpb.dm_pelmasuk_imp_kom a "+
-          "inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
-          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi "+
-          "where a.bulan_pib >= $3 "+
-          "and a.bulan_pib <= $4 "+
-          "and a.tahun_pib = $2 "+
-          "and b.kd_pel = $1 "+
+          "from nswdbpb.dm_pelmasuk_imp_kom a " +
+          "inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel " +
+          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi " +
+          "where a.bulan_pib >= $3 " +
+          "and a.bulan_pib <= $4 " +
+          "and a.tahun_pib = $2 " +
+          "and b.kd_pel = $1 " +
           "group by komoditi,urpel order by total_dok_pib desc limit 10 ", [kdpel, tahun, awal, akhir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {

@@ -10,9 +10,11 @@ router.post('/api/grafiklkp', index.postchartlkpApi)
 
 //api detailnegara
 router.post('/api/detneg', index.detailnegaraApi)
+router.post('/api/detneglkp', index.detailnegaralkpApi)
 
 //api detailpelabuhan
 router.post('/api/detpel', index.detailpelpenApi)
+router.post('/api/detpellkp', index.detailpelpenlkpApi)
 
 //api detailpelabuhan
 router.post('/api/detimportir', index.detailimportirApi)

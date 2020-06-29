@@ -236,9 +236,9 @@ async function getPelabuhan(chart, kode, total) {
                         //kode di sini, return harus berupa string yang ingin ditampilkan
                         var val = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
                         if (parseInt(val) >= 1000) {
-                            return 'in thousand total document pib. ' + val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                            return 'total document pib. ' + val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                         } else {
-                            return 'in thousand total document pib. ' + val;
+                            return 'total document pib. ' + val;
                         }
                     }
                 }
@@ -289,8 +289,16 @@ async function getPelabuhan(chart, kode, total) {
                 var tahun = $('#tahun').val();
                 var awal = $('#awal').val();
                 var akhir = $('#ahir').val();
+                var kl = $('#kl').val();
+                var komoditi = $('#komoditi').val();
 
-                detailpelabuhan(kdpel, tahun, awal, akhir);
+                if (kl == 0 ){
+                    detailpelabuhan(kdpel, tahun, awal, akhir);
+                }
+                else{
+                    detailpelabuhanlkp(kdpel, tahun, awal, akhir, kl, komoditi);
+                }
+                
             },
             animation: {
                 onProgress: function (animation) {
@@ -385,9 +393,14 @@ async function getNegaraimport(chart, kode, total) {
                 }
                 var tahun = $('#tahun').val();
                 var awal = $('#awal').val();
-                var ahir = $('#ahir').val();
-
-                detailnegara (kdneg,tahun,awal,ahir);
+                var akhir = $('#ahir').val();
+                var kl = $('#kl').val();
+                var komoditi = $('#komoditi').val();
+                if (kl == 0) {
+                    detailnegara(kdneg, tahun, awal, akhir);
+                } else {
+                    detailnegaralkp(kdneg, tahun, awal, akhir, kl, komoditi);
+                }
 
             }, animation: {
                 onProgress: function (animation) {
@@ -768,6 +781,49 @@ $.ajax({
     }
 });
 }
+//grafik detail negara lengkap
+function detailnegaralkp(kdneg, tahun, awal, akhir, kl, komoditi) {
+    $.ajax({
+        url: 'http://localhost:3000/api/detneglkp',
+        method: 'POST',
+        data: {
+            kdneg: kdneg,
+            tahun: tahun,
+            awal: awal,
+            akhir: akhir,
+            kl:kl,
+            komoditi:komoditi
+        },
+        dataType: 'json',
+        success: function (response) {
+            let dataResult = response.finalResult;
+            var html = '';
+            var table = $('#detnegaratbl tbody');
+
+            dataResult.forEach(data => {
+                var bilangan = (data.total / 1000000).toFixed(0);
+                var number_string = bilangan.toString(),
+                    sisa = number_string.length % 3,
+                    rupiah = number_string.substr(0, sisa),
+                    ribuan = number_string.substr(sisa).match(/\d{3}/g);
+
+                if (ribuan) {
+                    separator = sisa ? '.' : '';
+                    rupiah += separator + ribuan.join('.');
+                }
+                html += "<tr><td>" + data.negara + "</td><td>" + data.kode + " </td><td> (in millions) Rp." + rupiah + "</td></tr>";
+            })
+
+            table.empty();
+            table.append(html);
+            $('#Modaldetailnegaraimpor').modal('show');
+
+        },
+        error: function (data) {
+            console.log(data);
+        }
+    });
+}
 //grafik detail pelabuhan   
 function detailpelabuhan(kdpel, tahun, awal, akhir) {
     $.ajax({
@@ -809,6 +865,50 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
         console.log(data);
     }
 });
+}
+//grafik detail pelabuhan lengkap   
+function detailpelabuhanlkp(kdpel, tahun, awal, akhir, kl, komoditi) {
+    $.ajax({
+        url: 'http://localhost:3000/api/detpellkp',
+        method: 'POST',
+        data: {
+            kdpel: kdpel,
+            tahun: tahun,
+            awal: awal,
+            akhir: akhir,
+            kl: kl,
+            komoditi:komoditi
+        },
+        dataType: 'json',
+        success: function (response) {
+            let dataResult = response.finalResult;
+            var html = '';
+            var table = $('#detpelabuhantbl tbody');
+
+            dataResult.forEach(data => {
+                var bilangan = (data.total / 1).toFixed(0);
+                var number_string = bilangan.toString(),
+                    sisa = number_string.length % 3,
+                    totalfix = number_string.substr(0, sisa),
+                    ribuan = number_string.substr(sisa).match(/\d{3}/g);
+
+                if (ribuan) {
+                    separator = sisa ? '.' : '';
+                    totalfix += separator + ribuan.join('.');
+                }
+
+                html += "<tr><td>" + data.kdpel + "</td><td>" + data.kode + " </td><td> total document pib = " + totalfix + "</td > < /tr>";
+            })
+
+            table.empty();
+            table.append(html);
+            $('#Modaldetailpelabuhanpendapatan').modal('show');
+
+        },
+        error: function (data) {
+            console.log(data);
+        }
+    });
 }
 //grafik detail importir
 function detailimportir(kode, tahun, awal, akhir) {
