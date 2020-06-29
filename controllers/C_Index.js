@@ -38,7 +38,7 @@ class C_Index {
 
       //negara import
       await db.any("SELECT kd_negara_asal, coalesce(sum(cif_rupiah),0) as total FROM "+
-      "nswdbpb.dm_negasal_imp_KOM a "+
+      "nswdbpb.dm_negasal_imp a "+
       "WHERE a.bulan_pib >= $2 and a.bulan_pib <= $3 and tahun_pib = $1 group by kd_negara_asal ORDER BY total desc limit 5;", [tahun, awal, ahir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
@@ -53,7 +53,7 @@ class C_Index {
 
       //pelabuhan 
       await db.any("SELECT kd_pelabuhan_masuk AS kode_pelabuhan, coalesce(sum(cif_rupiah),0) total "+
-          "FROM nswdbpb.dm_pelmuat_imp_kom WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 GROUP BY kd_pelabuhan_masuk ORDER BY total desc limit 5;", [tahun, awal, ahir])
+          "FROM nswdbpb.dm_pelmasuk_importir WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 GROUP BY kd_pelabuhan_masuk ORDER BY total desc limit 5;", [tahun, awal, ahir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
             pelabuhanKode.push(result[i].kode_pelabuhan);
@@ -66,11 +66,14 @@ class C_Index {
 
       //importir
       await db.any("SELECT nama_importir, coalesce(sum(cif_rupiah),0) total FROM "+ 
-          "nswdbpb.dm_pelmuat_imp_kom WHERE bulan_pib >= $2 and bulan_pib <=$3 and tahun_pib =$1 GROUP BY nama_importir ORDER BY total desc limit 10;", [tahun, awal, ahir])
+          "nswdbpb.dm_pelmasuk_imp_kom WHERE bulan_pib >= $2 and bulan_pib <=$3 and tahun_pib =$1 GROUP BY npwp, nama_importir ORDER BY total desc limit 10;", [tahun, awal, ahir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
+
+
+            
             importirNama.push(result[i].nama_importir);
-            importirTotal.push(result[i].total)
+            importirTotal.push(result[i].total);
           }
 
         })
@@ -223,16 +226,15 @@ class C_Index {
       } = req.body;
       
       await db.any(
-        "SELECT kd_negara_asal, kd_komoditi, coalesce(sum(cif_rupiah), 0) as total FROM "+
-        "nswdbpb.dm_negasal_imp_kom "+
-        "WHERE bulan_pib >= $3 and bulan_pib <= $4 and tahun_pib = $2 and kd_negara_asal = $1 "+
-        "group by kd_negara_asal, kd_komoditi ORDER BY total desc limit 5;", [kdneg, tahun, awal, akhir])
+        "SELECT a.kd_negara_asal, b.ur_komoditi, coalesce(sum(a.cif_rupiah), 0) as total "+
+        "FROM nswdbpb.dm_negasal_imp_kom a, nswdbdwh.dim_komoditi b "+
+        "WHERE bulan_pib >=$3  and bulan_pib <= $4 and tahun_pib = $2 and kd_negara_asal = $1 "+
+        "group by a.kd_negara_asal, b.ur_komoditi ORDER BY total desc limit 5;", [kdneg, tahun, awal, akhir])
          .then((result) => {
-          console.log(req.body) 
               for (let i = 0; i < result.length; i++) {
                 finalResult.push({
                   negara: result[i].kd_negara_asal,
-                  kode: result[i].kd_komoditi,
+                  kode: result[i].ur_komoditi,
                   total: result[i].total
                 })
               }
@@ -249,6 +251,7 @@ class C_Index {
 
     async detailpelpenApi(req, res) {
       var finalResult = [];
+      var kode = [];
 
       const {
         kdpel,
@@ -258,16 +261,19 @@ class C_Index {
       } = req.body;
 
       await db.any(
-          "SELECT kd_pelabuhan_masuk AS kode_pelabuhan, kd_komoditi, coalesce(sum(cif_rupiah), 0) total "+
-          "FROM nswdbpb.dm_pelmuat_imp_kom WHERE bulan_pib >= $3 and bulan_pib <= $4 and tahun_pib = $2 and kd_pelabuhan_masuk = $1 GROUP BY kd_pelabuhan_masuk,kd_komoditi ORDER BY total desc limit 5;", [kdpel, tahun, awal, akhir])
+          "SELECT a.kd_pelabuhan_masuk AS kode_pelabuhan , b.ur_komoditi,coalesce(sum(a.cif_rupiah), 0) total "+
+          "FROM nswdbpb.dm_pelmasuk_imp_kom a, nswdbdwh.dim_komoditi b "+
+          "WHERE a.bulan_pib >= $3 and a.bulan_pib <= $4 and a.tahun_pib = $2 and a.kd_pelabuhan_masuk = $1 "+
+          "GROUP BY a.kd_pelabuhan_masuk, b.ur_komoditi ORDER BY total desc limit 5; ", [kdpel, tahun, awal, akhir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
 
             finalResult.push({
               pel: req.body.kdpel,
-              kode: result[i].kd_komoditi,
+              kode: result[i].ur_komoditi,
               total: result[i].total
             })
+            console.log(kode);
           }
         })
         .catch((err) => {
@@ -291,15 +297,17 @@ class C_Index {
       } = req.body;
 
       await db.any(
-          "SELECT nama_importir, kd_komoditi, coalesce(sum(cif_rupiah),0) total FROM "+
-          "nswdbpb.dm_pelmuat_imp_kom WHERE bulan_pib >= $3 and bulan_pib <= $4 and tahun_pib = $2 and nama_importir = $1"+
-          "GROUP BY nama_importir,kd_komoditi ORDER BY total desc limit 10;", [kdimportir, tahun, awal, akhir])
+          "SELECT a.nama_importir, b.ur_komoditi, coalesce(sum(a.cif_rupiah),0) total "+
+          "FROM nswdbpb.dm_pelmasuk_imp_kom a, nswdbdwh.dim_komoditi b "+
+          "WHERE a.bulan_pib >= $3 and a.bulan_pib <= $4 and a.tahun_pib = $2 "+
+          "and a.nama_importir = $1 "+
+          "GROUP BY a.nama_importir, b.ur_komoditi ORDER BY total desc limit 10; ", [kdimportir, tahun, awal, akhir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
 
             finalResult.push({
               nama_importir: result[i].nama_importir,
-              komoditi: result[i].kd_komoditi,
+              komoditi: result[i].ur_komoditi,
               total_detimportir: result[i].total              
             })
           }

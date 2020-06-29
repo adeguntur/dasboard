@@ -118,7 +118,7 @@ $(document).ready(function(tahun,awal,ahir){
             success: function (response) {
                 let dataResult = response.finalResult;
                 var html = '';
-                var table = $('#detimportirtbl tbody');
+                var table = $('#detposbordertbl tbody');
 
                 dataResult.forEach(data => {
                     var bilangan = (data.total / 1000).toFixed(0);
@@ -132,12 +132,12 @@ $(document).ready(function(tahun,awal,ahir){
                         rupiah += separator + ribuan.join('.');
                     }
 
-                    html += "<tr><td>" + data.nopib + "</td><td>" + data.tglpib + "</td><td>" + data.seribarang + "</td><td>" + data.jmlsatuan + "</td><td>" + data.kodesatuan + "</td><td>" + data.npwp + "</td><td>" + data.importir + "</td></tr>";
+                    html += "<tr><td>" + data.nopib + "</td><td>" + data.tglpib + "</td><td>" + data.seribarang + "</td><td>" + data.jmlsatuan + "</td><td>" + data.kodesatuan + "</td><td>" + data.npwp + "</td><td>" + data.importir + "</td><td>" + data.kppbc + "</td><td>"  + data.notifikasi + "</td></tr>";
                 })
                 table.empty();
                 table.append(html);
 
-                $('#Modaldetailimportir').modal('show')
+                $('#Modalpostborder').modal('show')
 
             },
             error: function (data) {
