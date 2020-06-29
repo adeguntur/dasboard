@@ -246,7 +246,9 @@ class C_Index {
 
       await db.any("SELECT kd_negara_asal, coalesce(sum(cif_rupiah),0) as total FROM "+
       "nswdbpb.dm_negasal_imp_kom a "+
-      "WHERE a.bulan_pib >= $2 and a.bulan_pib <= $3 and tahun_pib = $1 group by kd_negara_asal ORDER BY total desc limit 5;", [tahun, awal, ahir])
+      "WHERE a.bulan_pib >= $2 and a.bulan_pib <= $3 and tahun_pib = $1 and "+
+      "kd_ga = $4 and kd_komoditi = $5 "+
+      "group by kd_negara_asal ORDER BY total desc limit 5; ", [tahun, awal, ahir, kl, komoditi])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
             negaraKode.push(result[i].kd_negara_asal);
@@ -260,9 +262,10 @@ class C_Index {
 
       //pelabuhan 
       await db.any("select b.kd_pel , sum(jml_dok_pib) total "+
-          "from nswdbpb.dm_pelmasuk_importir a inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
-          "where a.bulan_pib >= $2 and a.bulan_pib <= $3 and a.tahun_pib = $1 "+
-          "group by b.kd_pel order by total desc limit 5 ; ", [tahun, awal, ahir])
+          "from nswdbpb.dm_pelmasuk_imp_kom a inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
+          "where a.bulan_pib >= $2 and a.bulan_pib <= $3 and a.tahun_pib = $1 and "+
+          "kd_ga = $4 and kd_komoditi = $5 "+
+          "group by b.kd_pel order by total desc limit 5; ", [tahun, awal, ahir, kl, komoditi])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
             pelabuhanKode.push(result[i].kd_pel);
@@ -276,7 +279,7 @@ class C_Index {
       //importir
       await db.any("SELECT npwp ,nama_importir, coalesce(sum(cif_rupiah),0) total FROM "+
       "nswdbpb.dm_pelmasuk_imp_kom WHERE bulan_pib >= $2 and bulan_pib <= $3 "+
-      "and tahun_pib = $1 GROUP BY npwp, nama_importir ORDER BY total desc limit 10;", [tahun, awal, ahir])
+      "and tahun_pib = $1 and kd_ga = $4 and kd_komoditi = $5 GROUP BY npwp, nama_importir ORDER BY total desc limit 10;", [tahun, awal, ahir, kl, komoditi])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
             importirNama.push(result[i].nama_importir);
@@ -292,7 +295,7 @@ class C_Index {
         .any(
           "SELECT bulan_pib, coalesce(sum(cif_rupiah),0) total FROM "+
           "nswdbpb.dm_real_imp_border "+
-          "WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 GROUP BY bulan_pib;",[tahun, awal, ahir]
+          "WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 and kd_ga = $4 and kd_komoditi = $5 GROUP BY bulan_pib;", [tahun, awal, ahir, kl, komoditi]
         )
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
@@ -308,7 +311,7 @@ class C_Index {
       await db
         .any("SELECT bulan_pib, coalesce(sum(cif_rupiah),0) total FROM " +
             "nswdbpb.dm_real_imp_postborder " +
-            "WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 GROUP BY bulan_pib  ORDER BY bulan_pib asc", [tahun, awal, ahir]
+            "WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 and kd_ga = $4 and kd_komoditi = $5 GROUP BY bulan_pib  ORDER BY bulan_pib asc", [tahun, awal, ahir, kl, komoditi]
         )
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
@@ -323,7 +326,7 @@ class C_Index {
       //non pengawasan
       await db.any("SELECT bulan_pib, coalesce(sum(cif_rupiah), 0) total FROM "+
           "nswdbpb.dm_real_imp_nonijin " +
-          "WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 GROUP BY bulan_pib ORDER BY bulan_pib asc;", [tahun, awal, ahir])
+          "WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 and kd_ga = $4 and kd_komoditi = $5 GROUP BY bulan_pib ORDER BY bulan_pib asc;", [tahun, awal, ahir, kl, komoditi])
         .then((result) => {
             for (let i = 0; i < result.length; i++) {
               bulan_pib_Nawas.push(result[i].bulan_pib);
@@ -350,8 +353,7 @@ class C_Index {
       
       //per notif 11
       await db.any("SELECT bulan_pib, coalesce(sum(cif_rupiah),0) total FROM "+
-          "nswdbpb.dm_real_jns_postborder WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 AND kd_ga = $4 "+
-          "AND kd_komoditi = $5 "+
+          "nswdbpb.dm_real_jns_postborder WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 AND kd_ga = $4 AND kd_komoditi = $5 "+
           "AND kd_notif_postborder = '11' "+
           "group by bulan_pib ORDER BY bulan_pib asc;", [tahun, awal, ahir, kl, komoditi])
         .then((result) => {
@@ -366,8 +368,7 @@ class C_Index {
 
       //per notif 12
       await db.any("SELECT bulan_pib, coalesce(sum(cif_rupiah),0) total FROM " +
-        "nswdbpb.dm_real_jns_postborder WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 AND kd_ga = $4 " +
-        "AND kd_komoditi = $5 " +
+        "nswdbpb.dm_real_jns_postborder WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 AND kd_ga = $4 AND kd_komoditi = $5 " +
         "AND kd_notif_postborder = '12' " +
         "group by bulan_pib ORDER BY bulan_pib asc;", [tahun, awal, ahir, kl, komoditi])
         .then((result) => {
@@ -382,8 +383,7 @@ class C_Index {
 
         //per notif 13
      await db.any("SELECT bulan_pib, coalesce(sum(cif_rupiah),0) total FROM " +
-       "nswdbpb.dm_real_jns_postborder WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 AND kd_ga = $4 " +
-       "AND kd_komoditi = $5 " +
+       "nswdbpb.dm_real_jns_postborder WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 AND kd_ga = $4 AND kd_komoditi = $5 " +
        "AND kd_notif_postborder = '13' " +
        "group by bulan_pib ORDER BY bulan_pib asc;", [tahun, awal, ahir, kl, komoditi])
        .then((result) => {

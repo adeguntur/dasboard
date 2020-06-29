@@ -208,7 +208,7 @@ async function getPelabuhan(chart, kode, total) {
     var progress = document.getElementById('animationProgresspel' );
 
     for (var i in kode) {
-        var bilangan = (total[i] / 1000).toFixed(0); //penggunaan bilangan jutaan
+        var bilangan = (total[i] / 1).toFixed(0); //penggunaan bilangan jutaan
         labels.push(kode[i]);
         jml_pemasukan.push(bilangan);
     }
