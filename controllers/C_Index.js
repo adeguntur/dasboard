@@ -37,6 +37,213 @@ class C_Index {
       } = req.body;
 
       //negara import
+
+      await db.any("SELECT kd_negara_asal, coalesce(sum(cif_rupiah),0) as total FROM "+
+      "nswdbpb.dm_negasal_imp_kom a "+
+      "WHERE a.bulan_pib >= $2 and a.bulan_pib <= $3 and tahun_pib = $1 group by kd_negara_asal ORDER BY total desc limit 5;", [tahun, awal, ahir])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            negaraKode.push(result[i].kd_negara_asal);
+            negaraTotal.push(result[i].total);
+          }
+
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+      //pelabuhan 
+      await db.any("select b.kd_pel , sum(jml_dok_pib) total "+
+          "from nswdbpb.dm_pelmasuk_importir a inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
+          "where a.bulan_pib >= $2 and a.bulan_pib <= $3 and a.tahun_pib = $1 "+
+          "group by b.kd_pel order by total desc limit 5 ; ", [tahun, awal, ahir])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            pelabuhanKode.push(result[i].kd_pel);
+            pelabuhanJmlpemasukan.push(result[i].total)
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+      //importir
+      await db.any("SELECT npwp ,nama_importir, coalesce(sum(cif_rupiah),0) total FROM "+
+      "nswdbpb.dm_pelmasuk_imp_kom WHERE bulan_pib >= $2 and bulan_pib <= $3 "+
+      "and tahun_pib = $1 GROUP BY npwp, nama_importir ORDER BY total desc limit 10;", [tahun, awal, ahir])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            importirNama.push(result[i].nama_importir);
+            importirTotal.push(result[i].total);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+
+      //Border
+      await db
+        .any(
+          "SELECT bulan_pib, coalesce(sum(cif_rupiah),0) total FROM "+
+          "nswdbpb.dm_real_imp_border "+
+          "WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 GROUP BY bulan_pib;",[tahun, awal, ahir]
+        )
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            bulan_pibB.push(result[i].bulan_pib);
+            total_B.push(result[i].total);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+      //Post Border
+      await db
+        .any("SELECT bulan_pib, coalesce(sum(cif_rupiah),0) total FROM " +
+            "nswdbpb.dm_real_imp_postborder " +
+            "WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 GROUP BY bulan_pib  ORDER BY bulan_pib asc", [tahun, awal, ahir]
+        )
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            bulan_pib_PostBdr.push(result[i].bulan_pib);
+            total_PostBdr.push(result[i].total);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+      //non pengawasan
+      await db.any("SELECT bulan_pib, coalesce(sum(cif_rupiah), 0) total FROM "+
+          "nswdbpb.dm_real_imp_nonijin " +
+          "WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 GROUP BY bulan_pib ORDER BY bulan_pib asc;", [tahun, awal, ahir])
+        .then((result) => {
+            for (let i = 0; i < result.length; i++) {
+              bulan_pib_Nawas.push(result[i].bulan_pib);
+              total_Nawas.push(result[i].total);
+            }
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+
+      //per notif 01
+      await db.any("SELECT bulan_pib, coalesce(sum(cif_rupiah),0) total FROM "+
+          "nswdbpb.dm_real_jns_postborder WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 "+
+          "AND kd_notif_postborder = '01' group by bulan_pib ORDER BY bulan_pib asc;", [tahun, awal, ahir])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            bulan_pib_01.push(result[i].bulan_pib);
+            total_01.push(result[i].total);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+      
+      //per notif 11
+      await db.any("SELECT bulan_pib, coalesce(sum(cif_rupiah),0) total FROM "+
+          "nswdbpb.dm_real_jns_postborder WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 "+
+          "AND kd_notif_postborder = '11' "+
+          "group by bulan_pib ORDER BY bulan_pib asc;", [tahun, awal, ahir])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            bulan_pib_11.push(result[i].bulan_pib);
+            total_11.push(result[i].total);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+
+      //per notif 12
+      await db.any("SELECT bulan_pib, coalesce(sum(cif_rupiah),0) total FROM " +
+        "nswdbpb.dm_real_jns_postborder WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 "+
+        "AND kd_notif_postborder = '12' " +
+        "group by bulan_pib ORDER BY bulan_pib asc;", [tahun, awal, ahir])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            bulan_pib_12.push(result[i].bulan_pib);
+            total_12.push(result[i].total);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+
+        //per notif 13
+     await db.any("SELECT bulan_pib, coalesce(sum(cif_rupiah),0) total FROM " +
+       "nswdbpb.dm_real_jns_postborder WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 "+
+       "AND kd_notif_postborder = '13' " +
+       "group by bulan_pib ORDER BY bulan_pib asc;", [tahun, awal, ahir])
+       .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            bulan_pib_13.push(result[i].bulan_pib);
+            total_13.push(result[i].total);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+
+      res.send({
+        kode_pelabuhan: pelabuhanKode,
+        jml_pemasukan: pelabuhanJmlpemasukan,
+        kode_negara: negaraKode,
+        totalimport_negara: negaraTotal,
+        nama_importir: importirNama,
+        total_importir: importirTotal,
+        bulan_border: bulan_pibB,
+        total_border: total_B,
+        bulan_postborder: bulan_pib_PostBdr,
+        total_postborder: total_PostBdr,
+        bulan_nawas: bulan_pib_Nawas,
+        total_nawas: total_Nawas,
+        bulan_01: bulan_pib_01,
+        total_01: total_01,
+        bulan_11: bulan_pib_11,
+        total_11: total_11,
+        bulan_12: bulan_pib_12,
+        total_12: total_12,
+        bulan_13: bulan_pib_13,
+        total_13: total_13
+      })
+    }
+
+    async postchartlkpApi(req, res) {
+      var pelabuhanKode = [];
+      var pelabuhanJmlpemasukan = [];
+      var negaraKode = [];
+      var negaraTotal = [];
+      var importirNama = [];
+      var nama_importir = []; 
+      var importirTotal = [];
+      var bulan_pibB = [];
+      var total_B = [];
+      var bulan_pib_PostBdr = [];
+      var total_PostBdr = [];
+      var bulan_pib_Nawas = [];
+      var total_Nawas = [];
+      var bulan_pib_01 = [];
+      var total_01 = [];
+      var bulan_pib_11 = [];
+      var total_11 = [];
+      var bulan_pib_12 = [];
+      var total_12 = [];
+      var bulan_pib_13 = [];
+      var total_13 = [];
+
+      const {
+        tahun,
+        awal,
+        ahir,
+        kl,
+        komoditi
+      } = req.body;
+
+      //negara import
+
       await db.any("SELECT kd_negara_asal, coalesce(sum(cif_rupiah),0) as total FROM "+
       "nswdbpb.dm_negasal_imp_kom a "+
       "WHERE a.bulan_pib >= $2 and a.bulan_pib <= $3 and tahun_pib = $1 group by kd_negara_asal ORDER BY total desc limit 5;", [tahun, awal, ahir])

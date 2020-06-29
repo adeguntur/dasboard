@@ -6,6 +6,7 @@ router.get('/', index.index)
 
 //api chart
 router.post('/api/grafik', index.postchartApi)
+router.post('/api/grafiklkp', index.postchartlkpApi)
 
 //api detailnegara
 router.post('/api/detneg', index.detailnegaraApi)

@@ -4,34 +4,21 @@ $(document).ready(function(tahun,awal,ahir){
     var ahir = today.getMonth() + 1; //January = 0!
     var tahun = today.getFullYear();
 
-     $('#kl').prop('disabled', 'disabled');
-     $('#komoditi').prop('disabled', 'disabled');
-     //$('#Modaldetailimportir').hide();
-
     $('#tahun').val(tahun);
     $('#awal').val(awal);
     $('#ahir').val(ahir);
+    $('#tahunlkp').val(tahun);
+    $('#awallkp').val(awal);
+    $('#ahirlkp').val(ahir);
     short(tahun, awal, ahir); //pencarian data awal
     $("#cari").hide();
-    
-
-    $("#nav-realisasi-tab").click(function () {
-      $("#kl").prop("disabled", "disabled");
-      $("#komoditi").prop("disabled", "disabled");
-      $("#notif").prop("disabled", "disabled");
-      $("#kl").val("0").change();
-      $("#komoditi").val("0").change();
-    });
-
-    $("#nav-postborderjenis-tab").click(function () {
-      $("#kl").prop("disabled", false);
-      $("#komoditi").prop("disabled", false);
-    });
+    $("#carifull").hide();
     
     $('#cari').click(function () {
         $("#loading").show(); //awal loading label
         $("#loading1").show();
         $("#cari").hide();
+        $("#carifull").hide();
 
         $("#animationProgressneg").hide();
         $("#animationProgresspel").hide();
@@ -48,11 +35,36 @@ $(document).ready(function(tahun,awal,ahir){
         var tahun = $('#tahun').val();
         var awal = $('#awal').val();
         var ahir = $('#ahir').val();
-        var kl = $('#kl').val();
-        var komoditi = $('#komoditi').val();
-        short(tahun,awal,ahir,kl,komoditi);
+        short(tahun,awal,ahir);
         
     });
+
+     $('#carifull').click(function () {
+         $("#loading").show(); //awal loading label
+         $("#loading1").show();
+         $("#cari").hide();
+         $("#carifull").hide();
+
+         $("#animationProgressneg").hide();
+         $("#animationProgresspel").hide();
+         $("#animationProgressrel").hide();
+         $("#animationProgressrelper").hide();
+         $("#animationProgressimportir").hide();
+
+         $("#labelProgressneg").show();
+         $("#labelProgresspel").show();
+         $("#labelProgressrel").show();
+         $("#labelProgressrelper").show();
+         $("#labelProgressimportir").show();
+
+         var tahun = $('#tahunlkp').val();
+         var awal = $('#awallkp').val();
+         var ahir = $('#ahirlkp').val();
+         var kl = $('#kl').val();
+         var komoditi = $('#komoditi').val();
+         shortlkp(tahun, awal, ahir, kl, komoditi);
+
+     });
 
     $('#pb').click(function () {
         var tahun = $('#tahun').val();
@@ -61,7 +73,7 @@ $(document).ready(function(tahun,awal,ahir){
         shortpb(tahun, awal, ahir);
     });
 
-    function short(tahun,awal,ahir,kl,komoditi) {
+    function short(tahun,awal,ahir) {
 
             $.ajax({
                 url: 'http://localhost:3000/api/grafik',
@@ -69,9 +81,7 @@ $(document).ready(function(tahun,awal,ahir){
                 data: {
                     tahun: tahun,
                     awal: awal,
-                    ahir: ahir,
-                    kl:kl,
-                    komoditi:komoditi
+                    ahir: ahir
                 },
                 dataType:'json',
                 success: function (data) {
@@ -97,12 +107,56 @@ $(document).ready(function(tahun,awal,ahir){
                     $("#loading").hide();
                     $("#loading1").hide();
                     $("#cari").show();
+                    $("#carifull").show();
                 },
                 error: function (data) {
                     console.log(data);
                 }
             })
     }
+
+     function shortlkp(tahun, awal, ahir, kl, komoditi) {
+
+         $.ajax({
+             url: 'http://localhost:3000/api/grafiklkp',
+             method: 'POST',
+             data: {
+                 tahun: tahun,
+                 awal: awal,
+                 ahir: ahir,
+                 kl: kl,
+                 komoditi: komoditi
+             },
+             dataType: 'json',
+             success: function (data) {
+                 getPelabuhan('pelabuhan-pemasukan', data.kode_pelabuhan, data.jml_pemasukan);
+                 getNegaraimport('negara-import', data.kode_negara, data.totalimport_negara);
+                 getImportir('importir-terbesar', data.nama_importir, data.total_importir);
+                 getRealisasiimport('perkembangan-realisasi', data.bulan_border, data.total_border, data.bulan_postborder, data.total_postborder, data.bulan_nawas, data.total_nawas);
+                 getRealisasiimportper('perkembangan-realisasiper', data.bulan_01, data.total_01, data.bulan_11, data.total_11, data.bulan_12, data.total_12, data.bulan_13, data.total_13);
+
+                 $("#animationProgressneg").hide();
+                 $("#animationProgresspel").hide();
+                 $("#animationProgressrel").hide();
+                 $("#animationProgressrelper").hide();
+                 $("#animationProgressimportir").hide();
+
+                 $("#labelProgressneg").hide();
+                 $("#labelProgresspel").hide();
+                 $("#labelProgressrel").hide();
+                 $("#labelProgressrelper").hide();
+                 $("#labelProgressimportir").hide();
+
+                 $("#loading").hide();
+                 $("#loading1").hide();
+                 $("#cari").show();
+                 $("#carifull").show();
+             },
+             error: function (data) {
+                 console.log(data);
+             }
+         })
+     }
 
 
     function shortpb(tahun, awal, ahir) {
@@ -364,7 +418,7 @@ async function getImportir(chart, kode, total) {
     var chartData = {
         labels: labels,
         datasets: [{
-            label: "in millions Rp.",
+            label: "Cif dalam juta rupiah Rp.",
             backgroundColor: "#808080",
             fill: false,
             data: total_importir
