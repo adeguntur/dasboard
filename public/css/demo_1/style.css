@@ -321,7 +321,7 @@
 
 .navbar.default-layout {
   font-family: "roboto", sans-serif;
-  background: #fff;
+  background: #FFFAFA;
   transition: background 0.25s ease;
   -webkit-transition: background 0.25s ease;
   -moz-transition: background 0.25s ease;
@@ -333,9 +333,9 @@
   -webkit-transition: width 0.25s ease, background 0.25s ease;
   -moz-transition: width 0.25s ease, background 0.25s ease;
   -ms-transition: width 0.25s ease, background 0.25s ease;
-  background: #1c45ef;
+  background: #FFFAFA;
   width: 270px;
-  height: 63px;
+  height: 70px;
 }
 
 .navbar.default-layout .navbar-brand-wrapper .navbar-brand {
@@ -855,7 +855,7 @@
 }
 
 .page-body-wrapper {
-  min-height: calc(100vh - 63px);
+  min-height: calc(100vh - 70px);
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -868,7 +868,7 @@
 }
 
 .page-body-wrapper.full-page-wrapper {
-  width: 100%;
+  width: 120%;
   min-height: 100vh;
 }
 
@@ -896,7 +896,7 @@
 .content-wrapper {
   background: #F3F3F3;
   padding: 1.5rem 1.7rem;
-  width: 100%;
+  width: 122%;
   -webkit-box-flex: 1;
   -ms-flex-positive: 1;
   flex-grow: 1;

@@ -262,7 +262,7 @@ class C_Index {
 
       //pelabuhan 
       await db.any("select b.kd_pel , sum(jml_dok_pib) total "+
-          "from nswdbpb.dm_pelmasuk_imp_kom a inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
+          "from nswdbpb.dm_pelmasuk_imp a inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
           "where a.bulan_pib >= $2 and a.bulan_pib <= $3 and a.tahun_pib = $1 and "+
           "kd_ga = $4 and kd_komoditi = $5 "+
           "group by b.kd_pel order by total desc limit 5; ", [tahun, awal, ahir, kl, komoditi])
@@ -431,11 +431,11 @@ class C_Index {
       } = req.body;
       
       await db.any(
-        "select case when c.ur_komoditi is null then '[non]' else c.ur_komoditi end as komoditi, " +
+        "select case when c.ur_komoditi is null then 'Na' else trim(both '[]' from c.ur_komoditi) end as komoditi, " +
         "sum(a.cif_rupiah) total_cif_rp, b.uredi "+
         "from nswdbpb.dm_negasal_imp_kom a "+
         "inner join nswdb1.tblnegara b on a.kd_negara_asal = b.kdedi "+
-        "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi "+
+        "left join nswdbdwh.dim_komoditi c on a.kd_komoditi_border = c.kd_komoditi " +
         "where a.bulan_pib >= $3 and a.bulan_pib <= $4 and a.tahun_pib = $2 and b.kdedi = $1 "+
         "group by c.ur_komoditi,b.uredi order by total_cif_rp desc limit 10 ", [kdneg, tahun, awal, akhir])
          .then((result) => {
@@ -470,11 +470,11 @@ class C_Index {
       } = req.body;
 
       await db.any(
-          "select case when c.ur_komoditi is null then '[non]' else c.ur_komoditi end as komoditi, " +
+          "select case when c.ur_komoditi is null then 'Na' else trim(both '[]' from c.ur_komoditi) end as komoditi, " +
           "sum(a.cif_rupiah) total_cif_rp, b.uredi " +
           "from nswdbpb.dm_negasal_imp_kom a " +
           "inner join nswdb1.tblnegara b on a.kd_negara_asal = b.kdedi " +
-          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi " +
+          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi_border = c.kd_komoditi " +
           "where a.bulan_pib >= $3 and a.bulan_pib <= $4 and a.tahun_pib = $2 and b.kdedi = $1 and a.kd_ga = $5 and a.kd_komoditi = $6 " +
           "group by c.ur_komoditi,b.uredi order by total_cif_rp desc limit 10 ", [kdneg, tahun, awal, akhir, kl, komoditi])
         .then((result) => {
@@ -510,10 +510,10 @@ class C_Index {
       } = req.body;
 
       await db.any(
-          "select case when c.ur_komoditi is null then '[NON]' else c.ur_komoditi end as komoditi, sum(jml_dok_pib) total_dok_pib,b.ur_pel urpel  " +
+          "select case when c.ur_komoditi is null then 'Na' else  trim(both '[]' from c.ur_komoditi) end as komoditi, sum(jml_dok_pib) total_dok_pib,b.ur_pel urpel  " +
           "from nswdbpb.dm_pelmasuk_imp_kom a "+
           "inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
-          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi "+
+          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi_border = c.kd_komoditi " +
           "where a.bulan_pib >= $3 "+
           "and a.bulan_pib <= $4 "+
           "and a.tahun_pib = $2 "+
@@ -553,10 +553,10 @@ class C_Index {
       } = req.body;
 
       await db.any(
-          "select case when c.ur_komoditi is null then '[NON]' else c.ur_komoditi end as komoditi, sum(jml_dok_pib) total_dok_pib,b.ur_pel urpel  " +
+          "select case when c.ur_komoditi is null then 'Na' else  trim(both '[]' from c.ur_komoditi) end as komoditi, sum(jml_dok_pib) total_dok_pib,b.ur_pel urpel  " +
           "from nswdbpb.dm_pelmasuk_imp_kom a " +
           "inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel " +
-          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi " +
+          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi_border = c.kd_komoditi " +
           "where a.bulan_pib >= $3 " +
           "and a.bulan_pib <= $4 " +
           "and a.tahun_pib = $2 " +
@@ -594,7 +594,7 @@ class C_Index {
       } = req.body;
 
       await db.any(
-          "SELECT a.nama_importir, b.ur_komoditi, coalesce(sum(a.cif_rupiah),0) total "+
+          "SELECT a.nama_importir,  trim(both '[]' from c.ur_komoditi), coalesce(sum(a.cif_rupiah),0) total " +
           "FROM nswdbpb.dm_pelmasuk_imp_kom a, nswdbdwh.dim_komoditi b "+
           "WHERE a.bulan_pib >= $3 and a.bulan_pib <= $4 and a.tahun_pib = $2 "+
           "and a.nama_importir = $1 "+

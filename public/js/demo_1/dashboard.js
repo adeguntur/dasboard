@@ -4,6 +4,7 @@ $(document).ready(function(tahun,awal,ahir){
     var ahir = today.getMonth() + 1; //January = 0!
     var tahun = today.getFullYear();
 
+    $('#date').text(today);
     $('#tahun').val(tahun);
     $('#awal').val(awal);
     $('#ahir').val(ahir);
@@ -713,7 +714,14 @@ async function getRealisasiimportper(chart, bulan_01, total_01, bulan_11, total_
             scales: {
                 yAxes: [{
                     ticks: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        callback: function (value, index, values) {
+                            if (parseInt(value) >= 1000) {
+                                return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                            } else {
+                                return value;
+                            }
+                        }
                     }
                 }],
                 xAxes: [{
