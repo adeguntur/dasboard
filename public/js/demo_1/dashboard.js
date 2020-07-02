@@ -6,6 +6,8 @@ $(document).ready(function(tahun,awal,ahir){
     var ahir = today.getMonth() + 1; //January = 0!
     var tahun = today.getFullYear();
 
+    $("#kl").val("0").change();
+    $("#komoditi").val("0").change();
     $('#date').text(today);
     $('#tahun').val(tahun);
     $('#awal').val(awal);
@@ -16,7 +18,7 @@ $(document).ready(function(tahun,awal,ahir){
     short(tahun, awal, ahir); //pencarian data awal
     $("#cari").hide();
     $("#carifull").hide();
-    
+
     $('#cari').click(function () {
         $("#loading").show(); //awal loading label
         $("#loading1").show();
@@ -75,6 +77,11 @@ $(document).ready(function(tahun,awal,ahir){
         var ahir = $('#ahir').val();
         shortpb(tahun, awal, ahir);
     });
+    $('#sort').click(function () {
+                $("#kl").val("0").change();
+                $("#komoditi").val("0").change();
+    });
+    
 
     function short(tahun,awal,ahir) {
 
@@ -777,7 +784,7 @@ $.ajax({
                 separator = sisa ? '.' : '';
                 rupiah += separator + ribuan.join('.');
             }
-            html += "<tr><td>" + data.negara + "</td><td>" + data.kode + " </td><td> (Cif dalam juta rupiah)</td><td align='right' >Rp." + rupiah + "</td></tr>";
+            html += "<tr><td>" + data.negara + "</td><td>" + data.kode + " </td><td> (Cif dalam juta rupiah) Rp. </td><td align='right' >" + rupiah + "</td></tr>";
         })
 
         table.empty();
@@ -820,7 +827,7 @@ function detailnegaralkp(kdneg, tahun, awal, akhir, kl, komoditi) {
                     separator = sisa ? '.' : '';
                     rupiah += separator + ribuan.join('.');
                 }
-               html += "<tr><td>" + data.negara + "</td><td>" + data.kode + " </td><td> (Cif dalam juta rupiah)</td><td align='right' >Rp." + rupiah + "</td></tr>";
+               html += "<tr><td>" + data.negara + "</td><td>" + data.kode + " </td><td> (Cif dalam juta rupiah) Rp.</td><td align='right' >" + rupiah + "</td></tr>";
                })
 
             table.empty();
@@ -862,7 +869,7 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
                 totalfix += separator + ribuan.join('.');
             }
 
-            html += "<tr><td>" + data.kdpel + "</td><td>" + data.kode + " </td><td> Cif dalam juta rupiah  = </td><td align='right'> Rp.  " + totalfix + "</td > < /tr>";
+            html += "<tr><td>" + data.kdpel + "</td><td>" + data.kode + " </td><td> Total dokumen pib  = </td><td align='right'>  " + totalfix + "</td > < /tr>";
         })
 
         table.empty();
