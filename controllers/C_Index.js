@@ -538,21 +538,22 @@ class C_Index {
 
       await db.any(
           "select b.ur_pel ur_pelabuhan, case when c.ur_komoditi is null then 'N/A' else trim(both '[]' from c.ur_komoditi) end as komoditi, " +
-          "sum(a.cif_rupiah) cif_rupiah "+
-          "from( "+
-            "select kd_komoditi_border kd_komoditi, kd_pelabuhan_masuk, cif_rupiah, bulan_pib, tahun_pib "+
-            "from nswdbpb.dm_pelmasuk_imp_kom union select kd_komoditi_postborder kd_komoditi, kd_pelabuhan_masuk, cif_rupiah, "+
-            "bulan_pib, tahun_pib from nswdbpb.dm_pelmasuk_imp_kom "+
-          ") a "+
-          "inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
-          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi "+
-          "where a.bulan_pib >= $4 and "+
-          "a.bulan_pib <= $3 and "+
-          "a.tahun_pib = $2 and "+
-          "b.kd_pel = $1 "+
-          "b.kd_ga_postborder = $4 " +
-          "b.kd_komoditi_postborder = $5" +
-          "group by c.ur_komoditi, b.ur_pel order by cif_rupiah desc limit 10 ", [kdpel, tahun, awal, akhir, kl, komoditi])
+          "sum(a.cif_rupiah) cif_rupiah " +
+          "from( " +
+            "select kd_ga_postborder kd_ga_postborder, kd_ga_border kd_ga_border, kd_komoditi_border kd_komoditi_border, kd_komoditi_postborder kd_komoditi_postborder, kd_pelabuhan_masuk, cif_rupiah, bulan_pib, tahun_pib from nswdbpb.dm_pelmasuk_imp_kom where kd_pelabuhan_masuk = $1 " +
+            "union select kd_ga_postborder kd_ga_potsborder, kd_ga_border kd_ga_border, kd_komoditi_border kd_komoditi_border, kd_komoditi_postborder kd_komoditi_postborder, kd_pelabuhan_masuk, cif_rupiah, " +
+            "bulan_pib, tahun_pib from nswdbpb.dm_pelmasuk_imp_kom where kd_pelabuhan_masuk = $1 " +
+            ") a " +
+          "inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel " +
+          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi_border = c.kd_komoditi or a.kd_komoditi_postborder = c.kd_komoditi " +
+          "where a.bulan_pib >= $3 and " +
+          "a.bulan_pib <=  $4 and " +
+          "a.tahun_pib = $2 and " +
+          "a.kd_ga_border = $5 " +
+          "or a.kd_ga_postborder = $5 " +
+          "and a.kd_komoditi_postborder = $6 " +
+          "or a.kd_komoditi_postborder = $6 "+
+          "group by c.ur_komoditi, b.ur_pel order by cif_rupiah desc limit 10;", [kdpel, tahun, awal, akhir, kl, komoditi])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
 
@@ -598,7 +599,7 @@ class C_Index {
           "a.bulan_pib <= $4 and " +
           "a.tahun_pib = $2 " +
           "and b.kd_pel = $1 " +
-          "group by c.ur_komoditi, b.ur_pel order by cif_rupiah desc limit 10 ", [kdpel, tahun, awal, akhir])
+          "group by c.ur_komoditi, b.ur_pel order by cif_rupiah desc limit 10;", [kdpel, tahun, awal, akhir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
 
