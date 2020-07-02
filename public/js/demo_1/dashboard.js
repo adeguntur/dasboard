@@ -1,3 +1,5 @@
+var ip = "http://localhost:2500";
+
 $(document).ready(function(tahun,awal,ahir){
     var today = new Date();
     var awal = 1;
@@ -77,7 +79,7 @@ $(document).ready(function(tahun,awal,ahir){
     function short(tahun,awal,ahir) {
 
             $.ajax({
-                url: 'http://localhost:3000/api/grafik',
+                url: ip +'/api/grafik',
                 method: 'POST',
                 data: {
                     tahun: tahun,
@@ -118,7 +120,7 @@ $(document).ready(function(tahun,awal,ahir){
      function shortlkp(tahun, awal, ahir, kl, komoditi) {
 
          $.ajax({
-             url: 'http://localhost:3000/api/grafiklkp',
+             url: ip + '/api/grafiklkp',
              method: 'POST',
              data: {
                  tahun: tahun,
@@ -162,7 +164,7 @@ $(document).ready(function(tahun,awal,ahir){
     function shortpb(tahun, awal, ahir) {
 
         $.ajax({
-            url: 'http://localhost:3000/api/postborder',
+            url: ip + '/api/postborder',
             method: 'POST',
             data: {
                 tahun: tahun,
@@ -750,7 +752,7 @@ async function getRealisasiimportper(chart, bulan_01, total_01, bulan_11, total_
 //grafik detail negara
 function detailnegara(kdneg, tahun, awal, akhir) {
 $.ajax({
-    url: 'http://localhost:3000/api/detneg',
+    url: ip +'/api/detneg',
     method: 'POST',
     data : {
         kdneg: kdneg,
@@ -791,7 +793,7 @@ $.ajax({
 //grafik detail negara lengkap
 function detailnegaralkp(kdneg, tahun, awal, akhir, kl, komoditi) {
     $.ajax({
-        url: 'http://localhost:3000/api/detneglkp',
+        url: ip + '/api/detneglkp',
         method: 'POST',
         data: {
             kdneg: kdneg,
@@ -834,7 +836,7 @@ function detailnegaralkp(kdneg, tahun, awal, akhir, kl, komoditi) {
 //grafik detail pelabuhan   
 function detailpelabuhan(kdpel, tahun, awal, akhir) {
     $.ajax({
-        url: 'http://localhost:3000/api/detpel',
+        url: ip + '/api/detpel',
         method: 'POST',
         data: {
             kdpel: kdpel,
@@ -876,7 +878,7 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
 //grafik detail pelabuhan lengkap   
 function detailpelabuhanlkp(kdpel, tahun, awal, akhir, kl, komoditi) {
     $.ajax({
-        url: 'http://localhost:3000/api/detpellkp',
+        url: ip + '/api/detpellkp',
         method: 'POST',
         data: {
             kdpel: kdpel,
@@ -920,7 +922,7 @@ function detailpelabuhanlkp(kdpel, tahun, awal, akhir, kl, komoditi) {
 //grafik detail importir
 function detailimportir(kode, tahun, awal, akhir) {
     $.ajax({
-        url: 'http://localhost:3000/api/detimportir',
+        url: ip + '/api/detimportir',
         method: 'POST',
         data: {
             kdimportir: kode,
