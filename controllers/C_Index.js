@@ -491,19 +491,19 @@ class C_Index {
       } = req.body;
 
       await db.any(
-          "select b.uredi ur_negara, case when c.ur_komoditi is null then 'N/A' else trim(both '[]' from c.ur_komoditi) end as komoditi, sum(a.cif_rupiah) tcif_rupiah " +
-          "from( " +
-          " select kd_komoditi_border kd_komoditi, kd_negara_asal, cif_rupiah, bulan_pib, tahun_pib " +
-          " from nswdbpb.dm_negasal_imp_kom a union select kd_komoditi_postborder kd_komoditi, kd_negara_asal, cif_rupiah, bulan_pib, tahun_pib " +
-          "from nswdbpb.dm_negasal_imp_kom ) a " +
-          "inner join nswdb1.tblnegara b on a.kd_negara_asal = b.kdedi " +
-          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi " +
-          "where a.bulan_pib >= $3 " +
-          "and a.bulan_pib <= $4 " +
-          "and a.tahun_pib = $2 " +
-          "and b.kdedi = $1" +
-          "group by c.ur_komoditi, b.uredi " +
-          "order by tcif_rupiah desc limit 10 ", [kdneg, tahun, awal, akhir, kl, komoditi])
+          "select b.uredi ur_negara, case when c.ur_komoditi is null then 'N/A' else trim(both '[]' from c.ur_komoditi) end as komoditi, sum(a.cif_rupiah) tcif_rupiah "+ 
+          "from ( "+
+            "select kd_komoditi_border kd_komoditi_border, kd_komoditi_postborder kd_komoditi_postborder, kd_negara_asal, cif_rupiah, bulan_pib, tahun_pib "+
+            "from nswdbpb.dm_negasal_imp_kom a where kd_negara_asal = $1 union select kd_komoditi_border kd_komoditi_border, kd_komoditi_postborder kd_komoditi_postborder, kd_negara_asal, "+
+            "cif_rupiah, bulan_pib, tahun_pib from nswdbpb.dm_negasal_imp_kom where kd_negara_asal = $1) a " +
+          "inner join nswdb1.tblnegara b on a.kd_negara_asal = b.kdedi "+
+          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi_border = c.kd_komoditi or a.kd_komoditi_postborder = c.kd_komoditi "+
+          "where a.bulan_pib >= $3 "+
+          "and a.bulan_pib <= $4 "+
+          "and a.tahun_pib = $2 "+
+          "and a.kd_komoditi_border = $5 "+
+          "or a.kd_komoditi_postborder = $6 "+
+          "group by c.ur_komoditi, b.uredi order by tcif_rupiah desc limit 10 ", [kdneg, tahun, awal, akhir, kl, komoditi])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
             finalResult.push({
