@@ -91,7 +91,6 @@ $(document).ready(function(tahun,awal,ahir){
                     getImportir('importir-terbesar', data.nama_importir, data.total_importir);
                     getRealisasiimport('perkembangan-realisasi', data.bulan_border, data.total_border, data.bulan_postborder, data.total_postborder, data.bulan_nawas, data.total_nawas);
                     getRealisasiimportper('perkembangan-realisasiper', data.bulan_01, data.total_01, data.bulan_11, data.total_11, data.bulan_12, data.total_12, data.bulan_13, data.total_13);
-                    console.log(data);
 
                     $("#animationProgressneg").hide();
                     $("#animationProgresspel").hide();
@@ -776,7 +775,7 @@ $.ajax({
                 separator = sisa ? '.' : '';
                 rupiah += separator + ribuan.join('.');
             }
-            html += "<tr><td>" + data.negara + "</td><td>" + data.kode + " </td><td> (in millions) Rp. </td><td align='right' >" + rupiah + "</td></tr>";
+            html += "<tr><td>" + data.negara + "</td><td>" + data.kode + " </td><td> (Cif dalam juta rupiah)</td><td align='right' >Rp." + rupiah + "</td></tr>";
         })
 
         table.empty();
@@ -819,8 +818,8 @@ function detailnegaralkp(kdneg, tahun, awal, akhir, kl, komoditi) {
                     separator = sisa ? '.' : '';
                     rupiah += separator + ribuan.join('.');
                 }
-                html += "<tr><td>" + data.negara + "</td><td>" + data.kode + " </td><td> (in millions) Rp. </td><td align='right' >" + rupiah + "</td></tr>";
-            })
+               html += "<tr><td>" + data.negara + "</td><td>" + data.kode + " </td><td> (Cif dalam juta rupiah)</td><td align='right' >Rp." + rupiah + "</td></tr>";
+               })
 
             table.empty();
             table.append(html);
@@ -850,7 +849,7 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
         var table = $('#detpelabuhantbl tbody');
 
         dataResult.forEach(data => {
-            var bilangan = (data.total / 1).toFixed(0);
+            var bilangan = (data.total / 1000000).toFixed(0);
             var number_string = bilangan.toString(),
                 sisa = number_string.length % 3,
                 totalfix = number_string.substr(0, sisa),
@@ -861,7 +860,7 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
                 totalfix += separator + ribuan.join('.');
             }
 
-            html += "<tr><td>" + data.kdpel + "</td><td>" + data.kode + " </td><td> total document pib = </td><td align='right'>" + totalfix + "</td > < /tr>";
+            html += "<tr><td>" + data.kdpel + "</td><td>" + data.kode + " </td><td> Cif dalam juta rupiah  = </td><td align='right'> Rp.  " + totalfix + "</td > < /tr>";
         })
 
         table.empty();
