@@ -18,6 +18,7 @@ router.post('/api/detpellkp', index.detailpelpenlkpApi)
 
 //api detailpelabuhan
 router.post('/api/detimportir', index.detailimportirApi)
+router.post('/api/detimportirlkp', index.detailimportirlkpApi)
 
 //api post pb
 router.post('/api/postborder', index.butonpostborderApi)

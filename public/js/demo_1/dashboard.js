@@ -507,14 +507,20 @@ async function getImportir(chart, kode, total) {
             onClick: function (event, array) {
                 let element = this.getElementAtEvent(event);
                 if (element.length > 0) {
-                    var kdimportir = element[0]._model.label;
+                    var kdpel = element[0]._model.label;
                 }
                 var tahun = $('#tahun').val();
                 var awal = $('#awal').val();
                 var akhir = $('#ahir').val();
+                var kl = $('#kl').val();
+                var komoditi = $('#komoditi').val();
 
-                detailimportir(kdimportir, tahun, awal, akhir);
-
+                if (kl == 0 ){
+                    detailimportir(kdpel, tahun, awal, akhir);
+                }
+                else{
+                    detailimportirlkp(kdpel, tahun, awal, akhir, kl, komoditi);
+                }
             }, animation: {
                 onProgress: function (animation) {
                     progress.value = animation.animationObject.currentStep / animation.animationObject.numSteps;
@@ -858,7 +864,7 @@ function detailpelabuhan(kdpel, tahun, awal, akhir) {
         var table = $('#detpelabuhantbl tbody');
 
         dataResult.forEach(data => {
-            var bilangan = (data.total / 1000000).toFixed(0);
+            var bilangan = (data.total / 1).toFixed(0);
             var number_string = bilangan.toString(),
                 sisa = number_string.length % 3,
                 totalfix = number_string.substr(0, sisa),
@@ -936,6 +942,50 @@ function detailimportir(kode, tahun, awal, akhir) {
             tahun: tahun,
             awal: awal,
             akhir: akhir
+        },
+        success: function (response) {
+        let dataResult = response.finalResult;
+        var html = '';
+        var table = $('#detimportirtbl tbody');
+
+        dataResult.forEach(data => {
+            var bilangan = (data.total_detimportir / 1000000).toFixed(0);
+            var number_string = bilangan.toString(),
+                sisa = number_string.length % 3,
+                rupiah = number_string.substr(0, sisa),
+                ribuan = number_string.substr(sisa).match(/\d{3}/g);
+
+            if (ribuan) {
+                separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+
+            html += "<tr><td>" + data.nama_importir + "</td><td>" + data.komoditi + " </td><td> (in millions) Rp. </td><td align='left' >" + rupiah + "</td></tr>";
+        })
+        table.empty();
+        table.append(html);
+
+        $('#Modaldetailimportir').modal('show')
+        },
+        error: function (data) {
+            console.log(data);
+        }
+    });
+
+}
+
+//grafik detail importir lengkap
+function detailimportirlkp(kode, tahun, awal, akhir, kl, komoditi) {
+    $.ajax({
+        url: ip + '/api/detimportirlkp',
+        method: 'POST',
+        data: {
+            kdimportir: kode,
+            tahun: tahun,
+            awal: awal,
+            akhir: akhir,
+            kl: kl,
+            komoditi:komoditi 
         },
         success: function (response) {
         let dataResult = response.finalResult;

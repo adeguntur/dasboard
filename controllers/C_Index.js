@@ -38,13 +38,16 @@ class C_Index {
 
       //negara import
 
-      await db.any("select b.kdedi ur_negasal, sum(a.cif_rupiah) total "+
-      "from nswdbpb.dm_negasal_imp a inner join nswdb1.tblnegara b on a.kd_negara_asal = b.kdedi "+
-      "where a.bulan_pib >= $2 and a.bulan_pib <= $3 and a.tahun_pib = $1 "+
-      "group by b.kdedi order by total desc limit 5 ;", [tahun, awal, ahir])
+      await db.any("select a.kd_negara_asal, sum(a.cif_rupiah) total "+
+      "from nswdbpb.dm_negasal_imp a "+ 
+      "where a.bulan_pib >= $2 "+
+      "and a.bulan_pib <= $3 "+
+      "and a.tahun_pib = $1 "+
+      "group by a.kd_negara_asal "+
+      "order by total desc limit 5;", [tahun, awal, ahir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
-            negaraKode.push(result[i].ur_negasal);
+            negaraKode.push(result[i].kd_negara_asal);
             negaraTotal.push(result[i].total);
           }
 
@@ -54,10 +57,13 @@ class C_Index {
         });
 
       //pelabuhan 
-      await db.any("select b.kd_pel pelabuhan_masuk, sum(jml_dok_pib) total "+
-      "from nswdbpb.dm_pelmasuk_importir a inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
-      "where a.bulan_pib >= $2 and a.bulan_pib <= $3 and a.tahun_pib = $1 "+
-      "group by pelabuhan_masuk order by total desc limit 5 ", [tahun, awal, ahir])
+      await db.any("select a.kd_pelabuhan_masuk pelabuhan_masuk, sum(jml_dok_pib) total "+
+      "from nswdbpb.dm_pelmasuk_importir a "+
+      "where a.bulan_pib >= $2 and "+
+      "a.bulan_pib <= $3 and "+
+      "a.tahun_pib = $1 "+
+      "group by pelabuhan_masuk "+ 
+      "order by total desc limit 5;", [tahun, awal, ahir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
             pelabuhanKode.push(result[i].pelabuhan_masuk);
@@ -69,17 +75,25 @@ class C_Index {
         });
 
       //importir
-      await db.any("select a.nama_importir, sum(a.cif_rupiah) total "+
-          "from nswdbpb.dm_pelmasuk_importir a "+
-          "where a.bulan_pib >= $2 and "+
-          "a.bulan_pib <= $3 "+
-          "and a.tahun_pib = $1 "+
-          "group by a.nama_importir order by total desc limit 10; ", [tahun, awal, ahir])
+      await db.any("select b.npwp npwpimp, max (b.nama_importir) nama_imp, a.total totalimp from "+ 
+        "(select a.npwp, sum(a.cif_rupiah) total "+  
+        "from nswdbpb.dm_pelmasuk_importir a "+ 
+        "where a.bulan_pib >= $2 and "+
+        "a.bulan_pib <= $3 "+
+        "and a.tahun_pib = $1 "+ 
+        "group by a.npwp "+
+        "order by total desc "+
+        "limit 10) as a, "+
+        "nswdbpb.dm_pelmasuk_importir b "+ 
+        "where a.npwp = b.npwp "+
+        "group by npwpimp, totalimp "+
+        "order by totalimp desc limit 10;", [tahun, awal, ahir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
-            importirNama.push(result[i].nama_importir);
-            importirTotal.push(result[i].total);
+            importirTotal.push(result[i].totalimp);
+            importirNama.push(result[i].nama_imp);
           }
+          
         })
         .catch((err) => {
           console.log(err);
@@ -106,7 +120,7 @@ class C_Index {
       await db
         .any("SELECT bulan_pib, coalesce(sum(cif_rupiah),0) total FROM " +
             "nswdbpb.dm_real_imp_postborder " +
-            "WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 GROUP BY bulan_pib  ORDER BY bulan_pib asc", [tahun, awal, ahir]
+            "WHERE bulan_pib >= $2 and bulan_pib <= $3 and tahun_pib = $1 GROUP BY bulan_pib  ORDER BY bulan_pib asc;", [tahun, awal, ahir]
         )
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
@@ -297,18 +311,25 @@ class C_Index {
         });
 
       //importir
-      await db.any("select a.nama_importir, sum(a.cif_rupiah) total "+
-      "from nswdbpb.dm_pelmasuk_imp_kom a "+
-      "where a.bulan_pib >= $2 and "+
-      "a.bulan_pib <= $3 and "+
-      "a.tahun_pib = $1 and "+
-      "a.kd_ga_border = $4 or a.kd_ga_border = $4 and " +
-      "a.kd_komoditi_border = $5 or a.kd_ga_border = $4 " +
-      "group by a.nama_importir order by total desc limit 10;", [tahun, awal, ahir, kl, komoditi])
+      await db.any("select b.npwp npwpimp, max(b.nama_importir) nama_imp, a.total totalimp from "+
+        "(select npwp, sum(cif_rupiah) total "+
+        "from nswdbpb.dm_pelmasuk_imp_kom "+
+        "where bulan_pib >= $2 "+
+        "and bulan_pib <= $3 "+
+        "and tahun_pib = $1 "+ 
+        "and(kd_ga_border = $4 or kd_ga_postborder = $4) "+
+        "and(kd_komoditi_border = $5 or kd_ga_postborder = $5) "+
+        "group by npwp, kd_ga_border, kd_ga_postborder, kd_komoditi_border, kd_komoditi_postborder "+ 
+        "order by total desc "+
+        "limit 10) as a, "+
+        "nswdbpb.dm_pelmasuk_importir b "+
+        "where a.npwp = b.npwp "+
+        "group by npwpimp, totalimp "+ 
+        "order by totalimp desc limit 10;", [tahun, awal, ahir, kl, komoditi])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
-            importirNama.push(result[i].nama_importir);
-            importirTotal.push(result[i].total);
+            importirNama.push(result[i].nama_imp);
+            importirTotal.push(result[i].totalimp);
           }
         })
         .catch((err) => {
@@ -553,31 +574,35 @@ class C_Index {
       } = req.body;
 
       await db.any(
-          "select b.ur_pel ur_pelabuhan, case when c.ur_komoditi is null then 'N/A' else trim(both '[]' from c.ur_komoditi) end as komoditi, "+ 
-          "sum(a.jml_dok_pib) jml_dok_pib " +
-          "from( "+
-            "select kd_ga_border kd_ga, kd_komoditi_border kd_komoditi, "+
-            "kd_pelabuhan_masuk, jml_dok_pib, bulan_pib, tahun_pib from nswdbpb.dm_pelmasuk_imp_kom union select kd_ga_postborder kd_ga, " +
-            "kd_komoditi_postborder kd_komoditi, kd_pelabuhan_masuk, jml_dok_pib, bulan_pib, tahun_pib "+
-            "from nswdbpb.dm_pelmasuk_imp_kom) a "+
-          "inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
-          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi "+
-          "inner join nswdb1.tblga d on a.kd_ga = d.id_ga "+
-          "where a.bulan_pib >= $3 "+
-          "and a.bulan_pib <= $4 "+
-          "and a.tahun_pib = $2 "+
+          "select b.ur_pel ur_pelabuhan, "+
+          "case when c.komoditi is null then 'N/A' " +
+          "else trim(both '[]' " +
+          "from c.komoditi) end as komoditi, " +
+          "sum(a.jml_dok_pib) tjml_dok_pib " +
+          "from( " +
+          "select kd_ga_border kd_ga, kd_komoditi_border kd_komoditi, " +
+          "kd_pelabuhan_masuk, jml_dok_pib, bulan_pib, tahun_pib from nswdbpb.dm_pelmasuk_imp_kom " +
+          "union select kd_ga_postborder kd_ga, kd_komoditi_postborder kd_komoditi, " +
+          "kd_pelabuhan_masuk, jml_dok_pib, bulan_pib, tahun_pib from nswdbpb.dm_pelmasuk_imp_kom " +
+          ") a " +
+          "inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel " +
+          "left join nswdb1.tblrefkomoditi c on a.kd_komoditi = c.kd_komoditi " +
+          "inner join nswdb1.tblga d on a.kd_ga = d.id_ga " +
+          "where a.bulan_pib >= $3 " +
+          "and a.bulan_pib <= $4 " +
+          "and a.tahun_pib = $2 " +
+          "and b.kd_pel = $1 " +
           "and a.kd_ga = $5 "+
-          "and a.kd_komoditi = $6 "+
-          "and b.kd_pel = $1 "+
-          "group by c.ur_komoditi, b.ur_pel "+
-          "order by jml_dok_pib desc limit 10 ", [kdpel, tahun, awal, akhir, kl, komoditi])
+          "and a.kd_komoditi = $6 " +
+          "group by c.komoditi, b.ur_pel " +
+          "order by tjml_dok_pib desc limit 10 ;", [kdpel, tahun, awal, akhir, kl, komoditi])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
 
             finalResult.push({
               kdpel: result[i].ur_pelabuhan,
               kode: result[i].komoditi,
-              total: result[i].jml_dok_pib
+              total: result[i].tjml_dok_pib
             })
           }
         })
@@ -603,21 +628,25 @@ class C_Index {
       } = req.body;
 
       await db.any(
-          "select b.ur_pel ur_pelabuhan, case when c.ur_komoditi is null then 'N/A' else trim(both '[]' from c.ur_komoditi) end as komoditi, " +
-          "sum(a.jml_dok_pib) tjml_dok_pib " +
-          "from( " +
-          "select kd_ga_border kd_ga, kd_komoditi_border kd_komoditi, " +
-          "kd_pelabuhan_masuk, jml_dok_pib, bulan_pib, tahun_pib from nswdbpb.dm_pelmasuk_imp_kom union select kd_ga_postborder kd_ga, " +
-          "kd_komoditi_postborder kd_komoditi, kd_pelabuhan_masuk, jml_dok_pib, bulan_pib, tahun_pib " +
-          "from nswdbpb.dm_pelmasuk_imp_kom) a " +
-          "inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel " +
-          "left join nswdbdwh.dim_komoditi c on a.kd_komoditi = c.kd_komoditi " +
+          "select b.ur_pel ur_pelabuhan, "+
+          "case when c.komoditi is null then 'N/A' "+
+          "else trim(both '[]' "+
+              "from c.komoditi) end as komoditi, "+
+              "sum(a.jml_dok_pib) tjml_dok_pib "+
+          "from( "+
+            "select kd_ga_border kd_ga, kd_komoditi_border kd_komoditi, "+
+            "kd_pelabuhan_masuk, jml_dok_pib, bulan_pib, tahun_pib from nswdbpb.dm_pelmasuk_imp_kom "+
+            "union select kd_ga_postborder kd_ga, kd_komoditi_postborder kd_komoditi, "+
+            "kd_pelabuhan_masuk, jml_dok_pib, bulan_pib, tahun_pib from nswdbpb.dm_pelmasuk_imp_kom "+
+          ") a "+
+          "inner join nswdbdwh.dim_pelabuhan b on a.kd_pelabuhan_masuk = b.kd_pel "+
+          "left join nswdb1.tblrefkomoditi c on a.kd_komoditi = c.kd_komoditi "+
           "inner join nswdb1.tblga d on a.kd_ga = d.id_ga " +
           "where a.bulan_pib >= $3 " +
           "and a.bulan_pib <= $4 " +
           "and a.tahun_pib = $2 " +
           "and b.kd_pel = $1 " +
-          "group by a.jml_dok_pib,c.ur_komoditi, b.ur_pel " +
+          "group by c.komoditi, b.ur_pel " +
           "order by tjml_dok_pib desc limit 10 ;", [kdpel, tahun, awal, akhir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
@@ -651,18 +680,83 @@ class C_Index {
       } = req.body;
 
       await db.any(
-          "SELECT a.nama_importir,  trim(both '[]' from c.ur_komoditi), coalesce(sum(a.cif_rupiah),0) total " +
-          "FROM nswdbpb.dm_pelmasuk_imp_kom a, nswdbdwh.dim_komoditi b "+
-          "WHERE a.bulan_pib >= $3 and a.bulan_pib <= $4 and a.tahun_pib = $2 "+
-          "and a.nama_importir = $1 "+
-          "GROUP BY a.nama_importir, b.ur_komoditi ORDER BY total desc limit 10; ", [kdimportir, tahun, awal, akhir])
+        "select a.nama_importir nama_imp, "+
+        "case when c.komoditi is null then 'N/A' "+ 
+        "else trim(both '[]' "+
+        "from c.komoditi) end as komoditi, "+
+        "sum(a.cif_rupiah) cif_rp "+
+        "from( "+
+          "select kd_ga_border kd_ga, kd_komoditi_border kd_komoditi, "+
+          "nama_importir, cif_rupiah, bulan_pib, tahun_pib from nswdbpb.dm_pelmasuk_imp_kom "+
+          "union select kd_ga_postborder kd_ga, kd_komoditi_postborder kd_komoditi, "+
+          "nama_importir, cif_rupiah, bulan_pib, tahun_pib from nswdbpb.dm_pelmasuk_imp_kom "+
+        ") a "+
+        "left join nswdb1.tblrefkomoditi c on a.kd_komoditi = c.kd_komoditi "+ 
+        "where a.bulan_pib >= $3 "+
+        "and a.bulan_pib <= $4 "+
+        "and a.tahun_pib = $2 "+
+        "and a.nama_importir = $1 "+ 
+        "group by c.komoditi, a.nama_importir "+ 
+        "order by cif_rp desc limit 10 ;", [kdimportir, tahun, awal, akhir])
         .then((result) => {
           for (let i = 0; i < result.length; i++) {
 
             finalResult.push({
-              nama_importir: result[i].nama_importir,
-              komoditi: result[i].ur_komoditi,
-              total_detimportir: result[i].total              
+              nama_importir: result[i].nama_imp,
+              komoditi: result[i].komoditi,
+              total_detimportir: result[i].cif_rp              
+            })
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+
+      res.send({
+        finalResult: finalResult
+      })
+
+    }
+
+    async detailimportirlkpApi(req, res) {
+      var finalResult = [];
+
+      const {
+        kdimportir,
+        tahun,
+        awal,
+        akhir,
+        kl,
+        komoditi
+      } = req.body;
+
+      await db.any(
+        "select a.nama_importir nama_imp, "+
+        "case when c.komoditi is null then 'N/A' "+
+        "else trim(both '[]' "+
+            "from c.komoditi) end as komoditi, "+
+            "sum(a.cif_rupiah) cif_rp "+
+        "from( "+
+          "select kd_ga_border kd_ga, kd_komoditi_border kd_komoditi, "+
+          "nama_importir, cif_rupiah, bulan_pib, tahun_pib from nswdbpb.dm_pelmasuk_imp_kom "+
+          "union select kd_ga_postborder kd_ga, kd_komoditi_postborder kd_komoditi, "+
+          "nama_importir, cif_rupiah, bulan_pib, tahun_pib from nswdbpb.dm_pelmasuk_imp_kom "+
+        ") a "+
+        "left join nswdb1.tblrefkomoditi c on a.kd_komoditi = c.kd_komoditi "+
+        "where a.bulan_pib >= $3 "+
+        "and a.bulan_pib <= $4 "+
+        "and a.tahun_pib = $2 "+
+        "and a.nama_importir = $1 "+
+        "and a.kd_ga = $5 "+
+        "and a.kd_komoditi = $6 "+
+        "group by c.komoditi, a.nama_importir "+
+        "order by cif_rp desc limit 10;", [kdimportir, tahun, awal, akhir,kl,komoditi])
+        .then((result) => {
+          for (let i = 0; i < result.length; i++) {
+            finalResult.push({
+              nama_importir: result[i].nama_imp,
+              komoditi: result[i].komoditi,
+              total_detimportir: result[i].cif_rp              
             })
           }
         })
